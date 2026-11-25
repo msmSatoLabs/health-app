@@ -1,0 +1,88 @@
+/**
+ * The one place for colors, corner radii, spacing and fonts.
+ * Based on the "Fresh" direction: calm, airy, one sage-green accent,
+ * white cards with hairline borders and no shadows, 22px card corners.
+ * Change values here and the whole app follows.
+ */
+import { useColorScheme } from 'react-native';
+
+const light = {
+  bg: '#F3F6F4',
+  surface: '#FFFFFF',
+  ink: '#16201B',
+  muted: '#6E7C75',
+  line: '#E3E9E5',
+  cardBorder: '#E8EEEA',
+  tabBg: '#FFFFFF',
+  accent: '#2E9C73',
+  onAccent: '#FFFFFF',
+  accentSoft: '#DCF0E6',
+  accentInk: '#1E6E50',
+  warmSoft: '#FCEBDD',
+  warmInk: '#B4602A',
+  chipBg: '#EDF1EE',
+  track: '#E4EBE7',
+  // The one dark element (quests / highlights) so it stands out.
+  featureBg: '#16201B',
+  featureInk: '#F3F6F4',
+  gold: '#E9B949',
+  danger: '#C2473A',
+};
+
+export type Palette = typeof light;
+
+const dark: Palette = {
+  bg: '#0F1412',
+  surface: '#182019',
+  ink: '#E7EEE9',
+  muted: '#8C9C94',
+  line: '#222C26',
+  cardBorder: '#212B25',
+  tabBg: '#131916',
+  accent: '#4CC596',
+  onAccent: '#0D1A14',
+  accentSoft: '#1D3A2D',
+  accentInk: '#8BE3BC',
+  warmSoft: '#3A2A1D',
+  warmInk: '#F1A36B',
+  chipBg: '#1F2823',
+  track: '#232D27',
+  featureBg: '#DCF0E6',
+  featureInk: '#10251B',
+  gold: '#E9B949',
+  danger: '#E5776A',
+};
+
+export const radius = {
+  card: 22,
+  tile: 18,
+  row: 16,
+  icon: 12,
+  badge: 18,
+  input: 14,
+  pill: 999,
+};
+
+export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
+
+/** Manrope weights, loaded in src/app/_layout.tsx. */
+export const font = {
+  regular: 'Manrope_400Regular',
+  medium: 'Manrope_500Medium',
+  semibold: 'Manrope_600SemiBold',
+  bold: 'Manrope_700Bold',
+  heavy: 'Manrope_800ExtraBold',
+};
+
+/** Colors used for member avatars. */
+export const avatarColors = ['#E07A5F', '#3D9970', '#6C5CE7', '#F2A541', '#2D9CDB', '#D35D9B', '#5A6B7B'];
+
+export const palettes = { light, dark };
+
+export function useTheme() {
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
+  return { c: isDark ? dark : light, isDark, radius, space, font };
+}
+
+export type Theme = ReturnType<typeof useTheme>;

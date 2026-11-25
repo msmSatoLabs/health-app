@@ -2,6 +2,21 @@
 
 Product plan and MVP build order. Working conventions are in [CLAUDE.md](CLAUDE.md). The longer-form plan lives in Notion (Projects / Health app / Plan); this file is the version to build from.
 
+## Where things stand (Nov 25, 2026)
+
+The first version (PR #2) covers most of Phases 0 to 6 in one pass. It runs in Expo Go against a hosted Supabase project; setup steps are in [SETUP.md](SETUP.md).
+
+**Built:** email sign-up/sign-in, profiles (created on sign-up, editable name), 8 activity types (4 synced, 4 manual), server-side points with per-activity daily caps and a 0.5x multiplier for health activities typed in by hand, daily goal (placeholder 40 points), streaks, 9 achievements (one-time and daily, badges only), private communities with invite code and deep link, a week/today community leaderboard, rank on Home, profile stats, achievements and recent history, a `HealthSource` interface with a dev-only demo source, light/dark Fresh theme.
+
+**Built differently from the first-pass plan below:**
+- Points are computed by Postgres views and functions, not Edge Functions or a stored `daily_scores` table. Point rules live in the `activity_types` table instead of a separate `scoring_rules` table, and there's no `src/config/scoring.ts` mirror.
+- Entries are in `activity_logs` with `source` = `health` or `manual`.
+- Free community limit is set to **1**, matching the Notion plan ("joining more than one community" is paid). It's one number in `free_community_limit()`.
+- Tabs are Home, Ranks, Log (+), You. Settings live at the bottom of You.
+- No Jest/ESLint yet; checks are `npm run typecheck` and `npx expo export`.
+
+**Not built yet:** rest days that keep a streak alive, achievement bonus points, live (Realtime) leaderboard updates, tapping a member to see their profile, avatars and time zone on the profile, privacy toggles, history ranges (week/month/year), sleep healthy-range cap above 9 hours (today sleep simply caps at 8 hours' worth of points), unit tests for scoring.
+
 ## Product
 
 **Pitch:** a group chat that keeps your friends healthy. A points-based app where you and your friends earn points for living well (moving, sleeping, eating right, studying, seeing people) and compete in private groups.
@@ -46,7 +61,7 @@ All point values below are placeholders, stored in one config and tuned after re
 - Create a community, invite by code or link, join, leave.
 - Community leaderboard that updates live (Supabase Realtime).
 - Tap a member to see their profile (stats, recent activity, achievements), respecting their privacy settings.
-- Free users can be in a limited number of communities (placeholder: 3). No payments yet; just enforce the limit.
+- Free users can be in a limited number of communities (placeholder: 1). No payments yet; just enforce the limit.
 
 ### Home
 - Today's progress toward the daily goal, today's activities, current streak, and your rank in your community.
@@ -109,7 +124,7 @@ Each phase should end with something running on Sato's iPhone in Expo Go.
 
 ### Phase 5: Communities and leaderboard
 - `communities`, `community_members` + RLS (members-only visibility).
-- Create, join by code or link (Expo deep link), leave. Enforce the free limit of 3.
+- Create, join by code or link (Expo deep link), leave. Enforce the free limit.
 - Live leaderboard via Realtime. Member profile view with privacy respected.
 - Home shows your rank in your community.
 - **Done when:** two test accounts in the same community see each other's scores update live.

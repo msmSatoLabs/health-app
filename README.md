@@ -1,8 +1,8 @@
-# health-app (working name)
+# health-app (working name: Pulse)
 
 A mobile app that turns living a healthy life into a game you play with your friends. Think of it as a group chat that keeps your friends healthy.
 
-> The app doesn't have a name yet. This repo will be renamed once it does.
+> The app doesn't have a name yet. "Pulse" is a placeholder (`src/lib/config.ts` and `app.json`).
 
 ## The idea
 
@@ -11,28 +11,17 @@ A mobile app that turns living a healthy life into a game you play with your fri
 - Healthy limits are built in: daily caps, no rewards for extremes, and rest days count.
 - Global seasons reset monthly.
 
-## Who it's for
-
-College students and early-career young adults. First launch candidates are Irvine and Texas A&M (College Station), through social media and local small businesses.
-
-## Business model
-
-Growth comes before money. Almost everything is free. Paid features are:
-
-- Customizing a community (custom points, events, quests)
-- Joining more than one community
+Who it's for: college students and early-career young adults. Full product plan: [PLAN.md](PLAN.md) (and in Notion: Projects / Health app / Plan).
 
 ## Tech stack
 
-- Mobile: React Native + Expo, so the app can be built and tested without a Mac. iOS is the first target.
-- Backend: Supabase (database, sign-in, and server functions)
+- **Mobile:** React Native + Expo (TypeScript, Expo Router), so the app can be built and tested without a Mac. iOS is the first target.
+- **Backend:** Supabase (Postgres database, sign-in, security rules, database functions).
 
-Activity point values, big-event scoring, and the first activity list use placeholder values for now and will be tuned after development starts.
+## Getting started
 
-## Plan
-
-The full product plan lives in Notion: Projects / Health app / Plan.
+Follow **[SETUP.md](SETUP.md)**: create a free Supabase project, run one SQL file, add two keys to `.env`, and open the app on your iPhone with Expo Go.
 
 ## Status
 
-Planning. No code yet.
+First version (MVP) in progress: sign-in, activity logging with points and daily caps, streaks, achievements, private communities with invite codes and leaderboards, and profile history. Apple Health sync is wired behind an interface with demo data until a development build is set up.
