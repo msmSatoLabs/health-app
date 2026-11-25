@@ -37,6 +37,11 @@ const glyphs = {
   pencil: 'pencil-outline',
   link: 'link-variant',
   settings: 'cog-outline',
+  trendUp: 'trending-up',
+  trendDown: 'trending-down',
+  trendFlat: 'trending-neutral',
+  camera: 'camera-outline',
+  live: 'access-point',
 } satisfies Record<string, GlyphName>;
 
 export type IconName = keyof typeof glyphs;

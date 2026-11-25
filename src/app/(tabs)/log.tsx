@@ -10,8 +10,8 @@ import { useLoad } from '../../lib/useLoad';
 import { useTheme } from '../../theme/theme';
 
 export default function Log() {
-  const tile = useGridTileWidth();
-  const { c, radius, font } = useTheme();
+  const tile = useGridTileWidth(4, 10);
+  const { c, radius, type: typeScale } = useTheme();
   const { data, error } = useLoad(async () => {
     const [types, today] = await Promise.all([getActivityTypes(), getTodayBreakdown()]);
     return { types, today };
@@ -30,7 +30,7 @@ export default function Log() {
   if (!data || !type) {
     return (
       <Screen>
-        <Text variant="title">Log activity</Text>
+        <Text variant="largeTitle">Log activity</Text>
         <ErrorNote message={error} />
         {!error ? <Loading /> : null}
       </Screen>
@@ -62,28 +62,30 @@ export default function Log() {
 
   return (
     <Screen>
-      <Text variant="title">Log activity</Text>
+      <Text variant="largeTitle">Log activity</Text>
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {data.types.map((t) => {
           const on = t.key === selected;
           return (
             <Pressable
               key={t.key}
               onPress={() => setSelected(t.key)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: on }}
               style={{
                 width: tile,
                 alignItems: 'center',
-                gap: 6,
-                paddingVertical: 12,
+                gap: 8,
+                paddingVertical: 16,
                 borderRadius: radius.tile,
                 backgroundColor: on ? c.accent : c.surface,
                 borderWidth: 1,
                 borderColor: on ? c.accent : c.cardBorder,
               }}
             >
-              <Icon name={t.icon} size={22} color={on ? c.onAccent : c.accentInk} />
-              <Text variant="small" color={on ? c.onAccent : c.ink} style={{ fontFamily: font.semibold, fontSize: 11 }} numberOfLines={1}>
+              <Icon name={t.icon} size={30} color={on ? c.onAccent : c.accentInk} />
+              <Text variant="caption" color={on ? c.onAccent : c.ink} numberOfLines={1}>
                 {t.label}
               </Text>
             </Pressable>
@@ -91,27 +93,27 @@ export default function Log() {
         })}
       </View>
 
-      <Card style={{ gap: 16 }}>
+      <Card style={{ gap: 20, paddingVertical: 24 }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <Pressable
             accessibilityLabel="Less"
             onPress={() => setAmount((a) => Math.max(step, +(a - step).toFixed(2)))}
-            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: c.chipBg, alignItems: 'center', justifyContent: 'center' }}
+            style={{ width: 60, height: 60, borderRadius: radius.pill, backgroundColor: c.chipBg, alignItems: 'center', justifyContent: 'center' }}
           >
-            <Icon name="minus" size={22} color={c.ink} />
+            <Icon name="minus" size={28} color={c.ink} />
           </Pressable>
           <View style={{ alignItems: 'center' }}>
-            <Text variant="number" style={{ fontSize: 34 }}>
+            <Text variant="number" style={{ fontSize: typeScale.hero }}>
               {Number.isInteger(amount) ? amount.toLocaleString() : amount.toFixed(1)}
             </Text>
-            <Text variant="small">{type.unit}</Text>
+            <Text variant="body" color={c.muted}>{type.unit}</Text>
           </View>
           <Pressable
             accessibilityLabel="More"
             onPress={() => setAmount((a) => Math.min(type.max_per_entry, +(a + step).toFixed(2)))}
-            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: c.chipBg, alignItems: 'center', justifyContent: 'center' }}
+            style={{ width: 60, height: 60, borderRadius: radius.pill, backgroundColor: c.chipBg, alignItems: 'center', justifyContent: 'center' }}
           >
-            <Icon name="plus" size={22} color={c.ink} />
+            <Icon name="plus" size={28} color={c.ink} />
           </Pressable>
         </Row>
         <View style={{ gap: 6 }}>

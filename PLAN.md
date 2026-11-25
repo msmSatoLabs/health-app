@@ -15,7 +15,9 @@ The first version (PR #2) covers most of Phases 0 to 6 in one pass. It runs in E
 - Tabs are Home, Ranks, Log (+, centered), You, Settings.
 - No Jest/ESLint yet; checks are `npm run typecheck` and `npx expo export`.
 
-**Not built yet:** rest days that keep a streak alive, achievement bonus points, live (Realtime) leaderboard updates, tapping a member to see their profile, avatars and time zone on the profile, privacy toggles, history ranges (week/month/year), sleep healthy-range cap above 9 hours (today sleep simply caps at 8 hours' worth of points), unit tests for scoring.
+**Added Nov 26:** live leaderboards and a community activity feed (Supabase Realtime on `community_events`), member profiles that respect privacy settings, profile photos (Supabase Storage `avatars` bucket), privacy toggles (streak, achievements, per-activity), history by week/month/year and seasons (a season = one calendar month; community leaderboards can show current and past seasons), activity trends (last 7 days vs the 4 weeks before), achievements show date earned and a placeholder point value, larger Apple Health/Fitness-style layout. All profile editing lives in Settings.
+
+**Not built yet:** rest days that keep a streak alive, achievement bonus points counting toward scores (values are shown but not added), time zone on the profile, sleep healthy-range cap above 9 hours (today sleep simply caps at 8 hours' worth of points), unit tests for scoring.
 
 ## Product
 

@@ -43,7 +43,7 @@ export default function Ranks() {
 
   return (
     <Screen onRefresh={refresh} refreshing={refreshing}>
-      <Text variant="title">Communities</Text>
+      <Text variant="largeTitle">Communities</Text>
       <ErrorNote message={error} />
       {!data ? (
         !error ? <Loading /> : null
@@ -51,14 +51,14 @@ export default function Ranks() {
         <>
           {data.communities.map((cm) => (
             <Pressable key={cm.id} onPress={() => router.push(`/community/${cm.id}`)}>
-              <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <View style={{ flex: 1, gap: 2 }}>
+              <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 20 }}>
+                <View style={{ flex: 1, gap: 4 }}>
                   <Text variant="heading">{cm.name}</Text>
                   <Text variant="small">
                     {cm.community_members[0]?.count ?? 1} members · code {cm.invite_code}
                   </Text>
                 </View>
-                <Icon name="chevron" size={22} color={c.muted} />
+                <Icon name="chevron" size={26} color={c.muted} />
               </Card>
             </Pressable>
           ))}
@@ -66,8 +66,8 @@ export default function Ranks() {
           {atLimit ? (
             <Card style={{ gap: 4 }}>
               <Row>
-                <Icon name="lock" size={16} color={c.muted} />
-                <Text variant="heading" style={{ fontSize: 14 }}>
+                <Icon name="lock" size={20} color={c.muted} />
+                <Text variant="heading">
                   Want more than one community?
                 </Text>
               </Row>
@@ -75,13 +75,13 @@ export default function Ranks() {
             </Card>
           ) : (
             <>
-              <Card style={{ gap: 10 }}>
+              <Card style={{ gap: 12 }}>
                 <Text variant="heading">Start a community</Text>
                 <Text variant="small">Make a private group, then share the invite code with friends.</Text>
                 <Input placeholder="Name, e.g. Dorm 4B Crew" value={name} onChangeText={setName} maxLength={40} />
                 <Button title="Create" onPress={() => run('create')} loading={busy === 'create'} disabled={name.trim().length < 2} />
               </Card>
-              <Card style={{ gap: 10 }}>
+              <Card style={{ gap: 12 }}>
                 <Text variant="heading">Join with a code</Text>
                 <Input
                   placeholder="6-letter code"

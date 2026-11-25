@@ -36,7 +36,19 @@ export type DailyActivityPoints = {
 
 export type DailyPoints = { user_id: string; day: string; points: number };
 
-export type Profile = { id: string; display_name: string; is_premium: boolean; created_at: string };
+export type Profile = {
+  id: string;
+  display_name: string;
+  is_premium: boolean;
+  created_at: string;
+  avatar_url: string | null;
+  share_streak: boolean;
+  share_achievements: boolean;
+  hidden_activities: string[];
+};
+
+/** Profile fields people can change themselves (see the grant in the SQL). */
+export type ProfileUpdate = Partial<Pick<Profile, 'display_name' | 'avatar_url' | 'share_streak' | 'share_achievements' | 'hidden_activities'>>;
 
 export type Community = {
   id: string;
@@ -48,7 +60,29 @@ export type Community = {
 
 export type CommunityWithCount = Community & { community_members: { count: number }[] };
 
-export type LeaderboardRow = { user_id: string; display_name: string; points: number; rank: number };
+export type LeaderboardRow = { user_id: string; display_name: string; avatar_url: string | null; points: number; rank: number };
+
+export type FeedEvent = {
+  id: number;
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  /** Empty when the member hides that activity. */
+  activity_key: string | null;
+  created_at: string;
+};
+
+/** What a community mate can see. Null fields are hidden by that person's privacy settings. */
+export type MemberProfile = {
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  week_points: number;
+  season_points: number;
+  streak: number | null;
+  achievements: { key: string; title: string; icon: string; times: number; last_earned: string }[] | null;
+  activities: { activity_key: string; amount: number; points: number }[];
+};
 
 export type Achievement = {
   key: string;
@@ -57,11 +91,13 @@ export type Achievement = {
   kind: 'once' | 'daily';
   icon: string;
   sort_order: number;
+  /** Placeholder value shown on the badge. */
+  bonus_points: number;
 };
 
 export type UserAchievement = { achievement_key: string; period: string; earned_at: string };
 
-export type NewAchievement = Omit<Achievement, 'sort_order'> & { period: string };
+export type NewAchievement = Omit<Achievement, 'sort_order' | 'bonus_points'> & { period: string };
 
 export type MyStats = {
   today_points: number;

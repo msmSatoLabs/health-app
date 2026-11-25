@@ -6,13 +6,13 @@ import { useAuth } from '../../lib/auth';
 import { useTheme } from '../../theme/theme';
 
 export default function TabsLayout() {
-  const { c, font, radius } = useTheme();
+  const { c, font, radius, type } = useTheme();
   const { session } = useAuth();
   if (!session) return <Redirect href="/sign-in" />;
 
   const tab = (name: string) =>
     function TabIcon({ color }: { color: unknown }) {
-      return <Icon name={name} size={22} color={typeof color === "string" ? color : c.muted} />;
+      return <Icon name={name} size={26} color={typeof color === "string" ? color : c.muted} />;
     };
 
   return (
@@ -22,7 +22,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: c.accent,
         tabBarInactiveTintColor: c.muted,
         tabBarStyle: { backgroundColor: c.tabBg, borderTopColor: c.line },
-        tabBarLabelStyle: { fontFamily: font.semibold, fontSize: 10 },
+        tabBarLabelStyle: { fontFamily: font.semibold, fontSize: type.tab },
         sceneStyle: { backgroundColor: c.bg },
       }}
     >
@@ -37,8 +37,8 @@ export default function TabsLayout() {
           tabBarIcon: () => (
             <View
               style={{
-                width: 46,
-                height: 46,
+                width: 52,
+                height: 52,
                 marginTop: 8,
                 borderRadius: radius.pill,
                 backgroundColor: c.accent,
@@ -46,7 +46,7 @@ export default function TabsLayout() {
                 justifyContent: 'center',
               }}
             >
-              <Icon name="plus" size={24} color={c.onAccent} />
+              <Icon name="plus" size={28} color={c.onAccent} />
             </View>
           ),
         }}
