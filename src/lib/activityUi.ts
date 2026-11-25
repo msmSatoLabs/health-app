@@ -1,4 +1,5 @@
-import type { ActivitySource, ActivityType } from './types';
+import { previewPoints } from '../features/points/logic';
+import type { ActivityType } from './types';
 
 /** How the amount stepper behaves for each activity on the Log screen. */
 export const stepper: Record<string, { step: number; start: number }> = {
@@ -12,11 +13,12 @@ export const stepper: Record<string, { step: number; start: number }> = {
   social: { step: 1, start: 1 },
 };
 
-/** Rough points preview. The database does the real math (and caps). */
-export function estimatePoints(t: ActivityType, amount: number, source: ActivitySource, alreadyToday: number) {
-  const mult = source === 'manual' ? t.manual_multiplier : 1;
-  const raw = Math.floor(amount * t.points_per_unit * mult);
-  return Math.max(0, Math.min(raw, t.daily_cap - alreadyToday));
+/**
+ * Points preview for a new entry, given the amount already logged today.
+ * The database does the real math (and caps).
+ */
+export function estimatePoints(t: ActivityType, amount: number, amountAlreadyToday: number) {
+  return previewPoints(amount, { pointsPerUnit: t.points_per_unit, dailyCap: t.daily_cap }, amountAlreadyToday);
 }
 
 export function formatAmount(amount: number, unit: string) {

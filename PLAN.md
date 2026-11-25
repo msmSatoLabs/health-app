@@ -9,15 +9,22 @@ The first version (PR #2) covers most of Phases 0 to 6 in one pass. It runs in E
 **Built:** email sign-up/sign-in, profiles (created on sign-up, editable name), 8 activity types (4 synced, 4 manual), server-side points with per-activity daily caps and a 0.5x multiplier for health activities typed in by hand, daily goal (placeholder 40 points), streaks, 9 achievements (one-time and daily, badges only), private communities with invite code and deep link, a week/today community leaderboard, rank on Home, profile stats, achievements and recent history, a `HealthSource` interface with a dev-only demo source, light/dark Fresh theme.
 
 **Built differently from the first-pass plan below:**
-- Points are computed by Postgres views and functions, not Edge Functions or a stored `daily_scores` table. Point rules live in the `activity_types` table instead of a separate `scoring_rules` table, and there's no `src/config/scoring.ts` mirror.
+- Points are computed by Postgres views and functions, not Edge Functions or a stored `daily_scores` table. Per-activity rules live in the `activity_types` table; the other tunable numbers are in a `scoring_rules` table. Both are mirrored in `src/config/scoring.ts` (a test checks they match).
 - Entries are in `activity_logs` with `source` = `health` or `manual`.
 - Free community limit is set to **1**, matching the Notion plan ("joining more than one community" is paid). It's one number in `free_community_limit()`.
 - Tabs are Home, Ranks, Log (+, centered), You, Settings.
-- No Jest/ESLint yet; checks are `npm run typecheck` and `npx expo export`.
+- Checks: `npm test` (Jest, pure scoring/streak/rest-day logic), `npm run test:db` (all migrations against an in-memory Postgres), `npm run typecheck`, `npx expo export --platform ios`. ESLint is set up (`npm run lint`) but older screens still have a few errors.
 
 **Added Nov 26:** live leaderboards and a community activity feed (Supabase Realtime on `community_events`), member profiles that respect privacy settings, profile photos (Supabase Storage `avatars` bucket), privacy toggles (streak, achievements, per-activity), history by week/month/year and seasons (a season = one calendar month; community leaderboards can show current and past seasons), activity trends (last 7 days vs the 4 weeks before), achievements show date earned and a placeholder point value, larger Apple Health/Fitness-style layout. All profile editing lives in Settings.
 
-**Not built yet:** rest days that keep a streak alive, achievement bonus points counting toward scores (values are shown but not added), time zone on the profile, sleep healthy-range cap above 9 hours (today sleep simply caps at 8 hours' worth of points), unit tests for scoring.
+**Added Nov 27 (point mechanics):**
+- Manual entries earn full points (the 0.5x multiplier is set to 1 for every activity; a different anti-cheating approach comes later). Per-activity daily caps still apply.
+- Sleep: 1 point per hour, capped at 9 (partial hours round down).
+- Achievement points count: each badge's `bonus_points` is added to the day it was earned, so it shows in today/week/season totals, streak minimums and every leaderboard.
+- Rest days: one per week (Monday to Sunday), planned before that week starts (deadline: end of the Sunday before), cancellable until then. A rest day keeps a streak alive without adding to it. `profiles.extra_rest_days` raises the weekly allowance for a future paid plan (not editable from the app).
+- Time zone is saved on the profile and used for the rest-day deadline.
+
+**Not built yet:** buying extra rest days, weekly recap card, checking achievements on a schedule (today they're checked when the app logs or syncs).
 
 ## Product
 
@@ -41,23 +48,24 @@ The first version (PR #2) covers most of Phases 0 to 6 in one pass. It runs in E
 ### Activities and points
 Two kinds of entries:
 - **Synced** (from Apple Health, through the `HealthSource` interface): steps, workouts, sleep, active calories. Full points.
-- **Manual** (typed in): water, meals, study time, social hangouts. Fewer points and their own daily cap so nobody can type their way to the top.
+- **Manual** (typed in): water, meals, study time, social hangouts. Same points as synced entries for now; per-activity daily caps keep anyone from typing their way to the top.
 
 All point values below are placeholders, stored in one config and tuned after real use.
 
 ### Healthy limits (product rules)
 - Daily point cap per activity, so one huge workout or a 30,000-step day doesn't break the leaderboard.
-- Manual entries earn less than synced ones and have a separate daily cap.
-- No rewards for extremes: sleep points top out in a healthy range (about 7 to 9 hours), nothing for very low calories, very little sleep, or overtraining.
+- Manual entries earn the same as synced ones for now (no manual penalty).
+- No rewards for extremes: sleep earns 1 point per hour and tops out at 9, nothing for very low calories or overtraining.
 - Social and study points are capped too, so the app rewards balance over grinding one thing.
 
 ### Achievements
 - One-time achievements (e.g. "walk a mile a day for 7 days") give bonus points once.
 - Daily achievements can be earned again each day.
+- Achievement points are added to the day they're earned and count toward every total and ranking.
 
 ### Streaks
-- Streak for hitting the daily goal.
-- A planned rest day keeps the streak alive (placeholder: one rest day per week).
+- Streak for days with at least the streak minimum (placeholder 10 points).
+- One planned rest day per week (Monday to Sunday) keeps the streak alive. It must be planned before the week starts. More rest days can be bought later.
 
 ### Communities (private only in MVP)
 - Create a community, invite by code or link, join, leave.

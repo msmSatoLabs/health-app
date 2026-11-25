@@ -27,6 +27,9 @@ npm install
 npx expo start            # dev server; scan the QR code with the iPhone camera (Expo Go)
 npx expo start --tunnel   # if phone and PC can't see each other on Wi-Fi
 npm run typecheck         # tsc --noEmit; run before finishing any change
+npm test                  # Jest unit tests (scoring, streaks, rest days, config vs SQL)
+npm run test:db           # migrations + rule checks on an in-memory Postgres
+npm run lint              # ESLint (some older screens still have errors)
 npx expo install <pkg>    # ALWAYS use this to add packages (picks SDK-compatible versions)
 npx expo export --platform ios   # quick check that the bundle builds
 ```
@@ -62,24 +65,26 @@ supabase/migrations/     SQL schema; run in the Supabase SQL editor
 
 ## Backend rules
 
-- **Points are computed in the database, never in the app.** `activity_logs` stores raw amounts; the `daily_activity_points` / `daily_points` views apply rates, the manual multiplier and daily caps. `estimatePoints()` in the app is only a preview.
-- Placeholder tuning lives in data: `activity_types` (points_per_unit, daily_cap, manual_multiplier, max_per_entry) and the small SQL functions `daily_goal()`, `streak_min_points()`, `free_community_limit()`. Point values are deliberately placeholders until there's real usage.
+- **Points are computed in the database, never in the app.** `activity_logs` stores raw amounts; `daily_activity_points` applies rates and daily caps; `daily_points` adds achievement `bonus_points` on the day each badge was earned (`user_achievements.day`). `estimatePoints()` in the app is only a preview.
+- Placeholder tuning lives in data: `activity_types` (points_per_unit, daily_cap, manual_multiplier (currently 1 everywhere), max_per_entry), `achievements.bonus_points`, and the `scoring_rules` table (daily goal, streak minimum, free community limit, rest days per week, rest-day planning window), read through `rule()` / `daily_goal()` / `streak_min_points()` / `free_community_limit()`. `src/config/scoring.ts` mirrors all of it and `src/config/scoring.test.ts` fails if they drift.
+- Scoring, streak and rest-day rules also exist as pure functions in `src/features/{points,streaks,rest-days}/logic.ts` with Jest tests. When a rule changes, change the SQL, the logic file and the tests together.
+- Rest days: `rest_days` table, changed only through `plan_rest_day()` / `cancel_rest_day()`, which use the profile's `time_zone` for the deadline. `streak_for()` skips planned rest days.
 - Every table has RLS on. Users see only their own logs; friends see totals only through `community_leaderboard()`. Communities are created and joined only via `create_community()` / `join_community()` (they enforce the free limit).
 - Schema changes: add a **new** file in `supabase/migrations/` (don't edit one that's already been run), make it safe to paste into the SQL editor, and tell Sato in plain words what to run.
 - Never put the Supabase service_role key in the app or the repo.
 
 ## Healthy limits and privacy (product rules, not polish)
 
-- Daily cap per activity; manual entries earn less than synced ones; no rewards for extremes (sleep points top out in a healthy range, nothing for very low calories or overtraining); a planned rest day should keep a streak alive (not built yet).
+- Daily cap per activity; manual entries currently earn the same as synced ones (Sato's decision; a different anti-cheating approach comes later); no rewards for extremes (sleep is 1 point per hour up to 9, nothing for very low calories or overtraining); one planned rest day per week keeps a streak alive.
 - Health data is sensitive: collect only what a feature needs, never use it for ads. Location is off by default and fuzzed when shown. Public profiles and global rankings are opt-in.
 
 ## Apple Health
 
-Screens only use the `HealthSource` interface (`src/health/types.ts`). `healthKitSource.ts` is a stub until there's a development build (needs an Apple Developer account; build with EAS in the cloud). The demo source only runs in `__DEV__` and only when switched on in the Settings tab. Health-synced activities earn full points; typing them in by hand earns `manual_multiplier` (0.5).
+Screens only use the `HealthSource` interface (`src/health/types.ts`). `healthKitSource.ts` is a stub until there's a development build (needs an Apple Developer account; build with EAS in the cloud). The demo source only runs in `__DEV__` and only when switched on in the Settings tab. Health-synced and typed-in activities currently earn the same points.
 
 ## Testing the database locally
 
-There's no automated test suite yet. To sanity-check SQL, apply the migration to a scratch Postgres with a tiny `auth` shim (an `auth.users` table and an `auth.uid()` function reading a session setting) and run queries as the `authenticated` role.
+`npm run test:db` runs every migration against an in-memory Postgres (PGlite) with a tiny `auth`/`storage` shim, then checks scoring, achievement points, rest days, streaks and permissions as real `authenticated` users. Add checks to `supabase/tests/db-checks.mjs` when you change SQL rules.
 
 ## Out of scope for now
 

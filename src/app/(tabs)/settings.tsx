@@ -16,6 +16,7 @@ import {
   SwitchRow,
   Text,
 } from '../../components/ui';
+import { RestDayPlanner } from '../../features/rest-days/RestDayPlanner';
 import { isDemoHealthEnabled, setDemoHealthEnabled } from '../../health';
 import { friendlyError, getActivityTypes, getMyProfile, removeAvatar, updateProfile, uploadAvatar } from '../../lib/api';
 import { useAuth, useUserId } from '../../lib/auth';
@@ -202,6 +203,9 @@ export default function Settings() {
         Hidden activities still count toward your points, but friends won't see them on your profile or in the
         community feed.
       </Text>
+
+      <Section title="Rest days" />
+      <RestDayPlanner />
 
       <Section title="Health data" />
       <Card style={{ gap: 10 }}>

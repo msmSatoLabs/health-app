@@ -34,7 +34,8 @@ export type DailyActivityPoints = {
   points: number;
 };
 
-export type DailyPoints = { user_id: string; day: string; points: number };
+/** points = activity_points (capped) + bonus_points (achievements earned that day). */
+export type DailyPoints = { user_id: string; day: string; points: number; activity_points: number; bonus_points: number };
 
 export type Profile = {
   id: string;
@@ -45,6 +46,10 @@ export type Profile = {
   share_streak: boolean;
   share_achievements: boolean;
   hidden_activities: string[];
+  /** IANA time zone, e.g. America/Los_Angeles. Kept in sync by the app. */
+  time_zone: string;
+  /** Extra rest days per week (future paid plan). Not editable from the app. */
+  extra_rest_days: number;
 };
 
 /** Profile fields people can change themselves (see the grant in the SQL). */
@@ -91,7 +96,7 @@ export type Achievement = {
   kind: 'once' | 'daily';
   icon: string;
   sort_order: number;
-  /** Placeholder value shown on the badge. */
+  /** Points added to the day the badge is earned (placeholder values). */
   bonus_points: number;
 };
 
@@ -100,9 +105,15 @@ export type UserAchievement = { achievement_key: string; period: string; earned_
 export type NewAchievement = Omit<Achievement, 'sort_order' | 'bonus_points'> & { period: string };
 
 export type MyStats = {
+  /** Activity points plus achievement points earned today. */
   today_points: number;
+  today_bonus_points: number;
   week_points: number;
   lifetime_points: number;
   streak: number;
   daily_goal: number;
+  rest_day_today: boolean;
+  rest_days_per_week: number;
 };
+
+export type RestDay = { day: string; created_at: string };
