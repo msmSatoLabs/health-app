@@ -11,6 +11,7 @@ A gamified health app for college students and young adults: log healthy activit
 - Sato builds on **Windows** with an **iPhone**. No Mac and no Apple Developer account yet, so everything must work in **Expo Go**. Never require Xcode or a local iOS build.
 - Sato is **new to backends**. Explain database, auth and security changes in plain language, and keep [SETUP.md](SETUP.md) accurate whenever setup steps change.
 - **Open questions go in chat, not in docs.** Don't add "open questions" or TODO lists for Sato to PLAN.md, the README, or Notion; ask directly.
+- Prefers small, working steps over big drops. Finish a piece so it runs on the phone before starting the next.
 - Growth before money. Don't build payments yet.
 
 ## Stack
@@ -56,6 +57,8 @@ supabase/migrations/     SQL schema; run in the Supabase SQL editor
 - **All Supabase calls go through `src/lib/api.ts`.** Keep `src/lib/types.ts` in sync with the SQL.
 - Screens load data with `useLoad()` (reloads on focus, supports pull-to-refresh).
 - Dates sent to the database are the phone's **local** day (`localDay()` in `src/lib/dates.ts`).
+- TypeScript strict, functional components and hooks, small files. When scoring or streak logic grows on the client, keep it in pure functions separate from UI so it can be unit tested.
+- Small commits with clear messages. Never commit `.env`; keep `.env.example` up to date.
 
 ## Backend rules
 
@@ -65,6 +68,11 @@ supabase/migrations/     SQL schema; run in the Supabase SQL editor
 - Schema changes: add a **new** file in `supabase/migrations/` (don't edit one that's already been run), make it safe to paste into the SQL editor, and tell Sato in plain words what to run.
 - Never put the Supabase service_role key in the app or the repo.
 
+## Healthy limits and privacy (product rules, not polish)
+
+- Daily cap per activity; manual entries earn less than synced ones; no rewards for extremes (sleep points top out in a healthy range, nothing for very low calories or overtraining); a planned rest day should keep a streak alive (not built yet).
+- Health data is sensitive: collect only what a feature needs, never use it for ads. Location is off by default and fuzzed when shown. Public profiles and global rankings are opt-in.
+
 ## Apple Health
 
 Screens only use the `HealthSource` interface (`src/health/types.ts`). `healthKitSource.ts` is a stub until there's a development build (needs an Apple Developer account; build with EAS in the cloud). The demo source only runs in `__DEV__` and only when switched on in the You tab. Health-synced activities earn full points; typing them in by hand earns `manual_multiplier` (0.5).
@@ -72,3 +80,7 @@ Screens only use the `HealthSource` interface (`src/health/types.ts`). `healthKi
 ## Testing the database locally
 
 There's no automated test suite yet. To sanity-check SQL, apply the migration to a scratch Postgres with a tiny `auth` shim (an `auth.users` table and an `auth.uid()` function reading a session setting) and run queries as the `authenticated` role.
+
+## Out of scope for now
+
+Payments, global rankings and leagues, public communities, quests, the map, cosmetics, big life events, Android-specific work. See PLAN.md "Later" before adding any of these. PLAN.md's "Where things stand" section lists what's built and what's next.
