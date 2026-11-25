@@ -44,18 +44,22 @@ By default Supabase emails a confirmation link before a new account can sign in.
 
 ## 4. Connect the app to Supabase
 
-1. In Supabase, open **Project Settings → API** (or click **Connect** at the top). Copy the **Project URL** and the **anon public** key.
+1. In Supabase, click **Connect** at the top. Under "Set environment variables" you need two values:
+   - `SUPABASE_URL` (looks like `https://abcd1234.supabase.co`)
+   - `SUPABASE_PUBLISHABLE_KEY` (starts with `sb_publishable_`)
+
+   Ignore the "Install package" and "skill" steps there; they're for a different kind of project. **Do not copy `SUPABASE_SECRET_KEY`.** (Older Supabase projects call these the Project URL and the **anon public** key; that works too.)
 2. In the `health-app` folder, copy `.env.example` to a new file named `.env`:
    ```powershell
    copy .env.example .env
    ```
-3. Open `.env` and paste your two values:
+3. Open `.env` (in Notepad is fine) and paste your two values after the `=` signs, with no spaces or quotes. The publishable key goes on the `ANON_KEY` line:
    ```
    EXPO_PUBLIC_SUPABASE_URL=https://abcd1234.supabase.co
-   EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
    ```
 
-The anon key is meant to be in the app; the database's security rules protect the data. Never put the **service_role** key in the app. `.env` is already ignored by Git, so it won't be uploaded.
+The publishable (anon) key is meant to be in the app; the database's security rules protect the data. Never put the **secret** key (called **service_role** in older projects) in the app or share it. `.env` is already ignored by Git, so it won't be uploaded.
 
 ## 5. Run it on your iPhone
 

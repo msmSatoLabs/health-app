@@ -68,7 +68,7 @@ export default function SignIn() {
               Supabase isn't connected yet
             </Text>
             <Text variant="small" color={c.warmInk}>
-              Add your project URL and anon key to a .env file, then restart Expo. SETUP.md walks through it.
+              Add your project URL and publishable key to a .env file, then restart Expo. SETUP.md walks through it.
             </Text>
           </Card>
         ) : null}

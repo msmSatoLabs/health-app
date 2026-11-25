@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 
-// These come from the .env file (see SETUP.md). The "anon" key is safe to ship
+// These come from the .env file (see SETUP.md). The publishable ("anon") key is safe to ship
 // in the app: the database security rules decide what each user can do.
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
