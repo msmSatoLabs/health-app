@@ -77,7 +77,7 @@ Edit any file and save: the app on your phone updates in a second or two.
 1. Create an account in the app.
 2. Tap **+** and log some water or study time. Your points ring on Home fills up.
 3. Go to **Ranks**, create a community, and send the code to a friend (or make a second account to test).
-4. On the **You** tab, turn on **Demo health data**, then tap **Sync health** on Home to fill in fake steps, sleep and workouts.
+4. On the **Settings** tab, turn on **Demo health data**, then tap **Sync health** on Home to fill in fake steps, sleep and workouts.
 
 ## Changing point values
 

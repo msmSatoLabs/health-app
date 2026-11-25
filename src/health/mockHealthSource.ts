@@ -3,7 +3,7 @@ import type { HealthSource, HealthTotals } from './types';
 /**
  * Fake Apple Health data so you can try syncing in Expo Go.
  * Only offered in development builds (__DEV__), and only when turned on
- * in the You tab, so real users can never get points from it.
+ * in the Settings tab, so real users can never get points from it.
  * Numbers are stable for a given day and grow during the day.
  */
 function seeded(day: string) {

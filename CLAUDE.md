@@ -39,7 +39,7 @@ Expo changes between SDK versions; check the docs for the installed major versio
 src/app/                 Expo Router screens (every file is a route)
   _layout.tsx            root stack, fonts, auth provider
   sign-in.tsx            sign in / create account
-  (tabs)/                Home (index), Ranks, Log (+), You
+  (tabs)/                Home (index), Ranks, Log (+, centered), You, Settings
   community/[id].tsx     community leaderboard + invite
   join.tsx               invite deep link: healthapp://join?code=ABC123
 src/components/          ui.tsx (Text, Card, Button, Input, Chip, ...), Icon, Ring
@@ -75,7 +75,7 @@ supabase/migrations/     SQL schema; run in the Supabase SQL editor
 
 ## Apple Health
 
-Screens only use the `HealthSource` interface (`src/health/types.ts`). `healthKitSource.ts` is a stub until there's a development build (needs an Apple Developer account; build with EAS in the cloud). The demo source only runs in `__DEV__` and only when switched on in the You tab. Health-synced activities earn full points; typing them in by hand earns `manual_multiplier` (0.5).
+Screens only use the `HealthSource` interface (`src/health/types.ts`). `healthKitSource.ts` is a stub until there's a development build (needs an Apple Developer account; build with EAS in the cloud). The demo source only runs in `__DEV__` and only when switched on in the Settings tab. Health-synced activities earn full points; typing them in by hand earns `manual_multiplier` (0.5).
 
 ## Testing the database locally
 

@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Alert, Pressable, Switch, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, View } from 'react-native';
 import { Icon } from '../../components/Icon';
 import { useGridTileWidth, Avatar, Button, Card, ErrorNote, IconBubble, Input, Loading, Row, Screen, Text } from '../../components/ui';
-import { isDemoHealthEnabled, setDemoHealthEnabled } from '../../health';
 import {
   deleteLog,
   friendlyError,
@@ -18,7 +17,6 @@ import {
 import { formatAmount } from '../../lib/activityUi';
 import { useUserId } from '../../lib/auth';
 import { addDays, localDay, prettyDay, shortWeekday } from '../../lib/dates';
-import { supabase } from '../../lib/supabase';
 import { useLoad } from '../../lib/useLoad';
 import { useTheme } from '../../theme/theme';
 
@@ -40,12 +38,7 @@ export default function You() {
   });
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
-  const [demo, setDemo] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-
-  useEffect(() => {
-    isDemoHealthEnabled().then(setDemo);
-  }, []);
 
   if (!data) {
     return (
@@ -234,37 +227,7 @@ export default function You() {
         </Card>
       ))}
 
-      <Text variant="label" style={{ marginTop: 4 }}>
-        Settings
-      </Text>
-      <Card style={{ gap: 12 }}>
-        <Row>
-          <IconBubble name="heart" tone="warm" size={30} />
-          <View style={{ flex: 1 }}>
-            <Text variant="body">Apple Health</Text>
-            <Text variant="small">Needs the full app build. Not available in Expo Go yet.</Text>
-          </View>
-        </Row>
-        {__DEV__ ? (
-          <Row>
-            <IconBubble name="sync" size={30} />
-            <View style={{ flex: 1 }}>
-              <Text variant="body">Demo health data</Text>
-              <Text variant="small">Testing only. Fake steps, sleep and workouts for "Sync health".</Text>
-            </View>
-            <Switch
-              value={demo}
-              onValueChange={async (v) => {
-                setDemo(v);
-                await setDemoHealthEnabled(v);
-              }}
-              trackColor={{ true: c.accent, false: c.track }}
-            />
-          </Row>
-        ) : null}
-      </Card>
       <ErrorNote message={actionError} />
-      <Button title="Sign out" kind="secondary" icon="logout" onPress={() => supabase.auth.signOut()} />
     </Screen>
   );
 }

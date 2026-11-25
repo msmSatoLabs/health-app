@@ -52,6 +52,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen name="you" options={{ title: 'You', tabBarIcon: tab('user') }} />
+      <Tabs.Screen name="settings" options={{ title: 'Settings', tabBarIcon: tab('settings') }} />
     </Tabs>
   );
 }

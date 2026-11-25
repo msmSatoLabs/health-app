@@ -36,6 +36,7 @@ const glyphs = {
   trash: 'trash-can-outline',
   pencil: 'pencil-outline',
   link: 'link-variant',
+  settings: 'cog-outline',
 } satisfies Record<string, GlyphName>;
 
 export type IconName = keyof typeof glyphs;
