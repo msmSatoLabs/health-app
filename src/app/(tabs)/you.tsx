@@ -288,6 +288,7 @@ function AchievementGrid({ achievements, mine }: { achievements: Achievement[]; 
       {achievements.map((a) => {
         const earned = mine.filter((m) => m.achievement_key === a.key);
         const has = earned.length > 0;
+        const pts = a.bonus_points ?? 0;
         const last = earned.at(-1);
         const when = has
           ? `${a.kind === 'daily' && earned.length > 1 ? `${earned.length}× · last ` : ''}${shortDate(last!.earned_at)}`
@@ -296,11 +297,11 @@ function AchievementGrid({ achievements, mine }: { achievements: Achievement[]; 
           <Pressable
             key={a.key}
             accessibilityRole="button"
-            accessibilityLabel={`${a.title}. ${has ? `Earned ${when}` : 'Not earned yet'}. ${a.bonus_points} points.`}
+            accessibilityLabel={`${a.title}. ${has ? `Earned ${when}` : 'Not earned yet'}. ${pts} points.`}
             onPress={() =>
               Alert.alert(
                 a.title,
-                `${a.description}${a.kind === 'daily' ? ' (can be earned every day)' : ''}\n\n+${a.bonus_points} pts${
+                `${a.description}${a.kind === 'daily' ? ' (can be earned every day)' : ''}\n\n+${pts} pts${
                   has ? `\nEarned ${earned.length > 1 ? `${earned.length} times, most recently` : ''} ${shortDate(last!.earned_at)}` : ''
                 }`,
               )
@@ -324,7 +325,7 @@ function AchievementGrid({ achievements, mine }: { achievements: Achievement[]; 
               {a.title}
             </Text>
             <Text variant="caption" color={has ? c.accentInk : c.muted} numberOfLines={1}>
-              +{a.bonus_points} pts
+              +{pts} pts
             </Text>
             <Text variant="caption" numberOfLines={1} style={{ textAlign: 'center' }}>
               {when}

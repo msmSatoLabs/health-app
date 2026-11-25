@@ -19,7 +19,6 @@ import {
 import { isDemoHealthEnabled, setDemoHealthEnabled } from '../../health';
 import { friendlyError, getActivityTypes, getMyProfile, removeAvatar, updateProfile, uploadAvatar } from '../../lib/api';
 import { useAuth, useUserId } from '../../lib/auth';
-import { pickAvatarJpeg } from '../../lib/avatarPicker';
 import { supabase } from '../../lib/supabase';
 import type { ProfileUpdate } from '../../lib/types';
 import { useLoad } from '../../lib/useLoad';
@@ -55,6 +54,9 @@ export default function Settings() {
   }
 
   const { profile, types } = data;
+  // Missing until the 2026-11-26 database script has been run.
+  const needsDbUpdate = profile.hidden_activities === undefined || profile.share_streak === undefined;
+  const hiddenActivities = profile.hidden_activities ?? [];
   const editedName = name ?? profile.display_name;
   const nameChanged = editedName.trim() !== profile.display_name && editedName.trim().length > 0;
 
@@ -78,6 +80,8 @@ export default function Settings() {
   async function changePhoto() {
     setActionError(null);
     try {
+      // Loaded only when needed, so a photo-library problem can't break the page.
+      const { pickAvatarJpeg } = await import('../../lib/avatarPicker');
       const jpeg = await pickAvatarJpeg();
       if (!jpeg) return;
       setPhotoBusy(true);
@@ -117,7 +121,7 @@ export default function Settings() {
   }
 
   function toggleActivity(key: string, visible: boolean) {
-    const hidden = new Set(profile.hidden_activities);
+    const hidden = new Set(hiddenActivities);
     if (visible) hidden.delete(key);
     else hidden.add(key);
     save({ hidden_activities: [...hidden] });
@@ -126,6 +130,7 @@ export default function Settings() {
   return (
     <Screen onRefresh={refresh} refreshing={refreshing}>
       <Text variant="largeTitle">Settings</Text>
+      {needsDbUpdate ? <DbUpdateNote /> : null}
 
       <Section title="Profile" />
       <Card style={{ gap: 16 }}>
@@ -166,14 +171,14 @@ export default function Settings() {
         <SwitchRow
           icon="flame"
           title="Streak"
-          value={profile.share_streak}
+          value={profile.share_streak ?? true}
           onChange={(v) => save({ share_streak: v })}
         />
         <Divider />
         <SwitchRow
           icon="trophy"
           title="Achievements"
-          value={profile.share_achievements}
+          value={profile.share_achievements ?? true}
           onChange={(v) => save({ share_achievements: v })}
         />
       </Card>
@@ -187,7 +192,7 @@ export default function Settings() {
             <SwitchRow
               icon={t.icon}
               title={t.label}
-              value={!profile.hidden_activities.includes(t.key)}
+              value={!hiddenActivities.includes(t.key)}
               onChange={(v) => toggleActivity(t.key, v)}
             />
           </View>
@@ -230,5 +235,21 @@ export default function Settings() {
       <ErrorNote message={actionError} />
       <Button title="Sign out" kind="secondary" icon="logout" onPress={() => supabase.auth.signOut()} />
     </Screen>
+  );
+}
+
+function DbUpdateNote() {
+  const { c } = useTheme();
+  return (
+    <Card style={{ gap: 6, backgroundColor: c.warmSoft, borderColor: c.warmSoft }}>
+      <Text variant="heading" color={c.warmInk}>
+        Database update needed
+      </Text>
+      <Text variant="small" color={c.warmInk}>
+        Photos and privacy settings need the newest database script. In Supabase, run
+        supabase/migrations/20261126000000_social_profiles_seasons.sql in the SQL Editor, then pull down here to
+        refresh.
+      </Text>
+    </Card>
   );
 }

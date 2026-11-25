@@ -30,6 +30,8 @@ export function friendlyError(e: unknown): string {
     return 'Free accounts can be in one community for now. Joining more will be part of the paid plan.';
   if (msg.includes('invalid_invite_code')) return "That invite code doesn't match any community.";
   if (msg.includes('Invalid login credentials')) return 'Email or password is incorrect.';
+  if (/Could not find the function|does not exist|schema cache|Bucket not found/i.test(msg))
+    return 'The database needs an update: run the newest file in supabase/migrations in the Supabase SQL Editor (see SETUP.md).';
   return msg;
 }
 
