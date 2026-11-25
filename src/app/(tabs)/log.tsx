@@ -38,8 +38,9 @@ export default function Log() {
   }
 
   const step = stepper[type.key]?.step ?? 1;
-  const earned = data.today.find((d) => d.activity_key === type.key)?.points ?? 0;
-  const preview = estimatePoints(type, amount, 'manual', earned);
+  const todayRow = data.today.find((d) => d.activity_key === type.key);
+  const earned = todayRow?.points ?? 0;
+  const preview = estimatePoints(type, amount, todayRow?.amount ?? 0);
   const isHealthType = type.source === 'health';
 
   async function save() {
@@ -131,7 +132,7 @@ export default function Log() {
         <Chip
           tone="warm"
           icon="heart"
-          label={`Usually synced from Apple Health. By hand it earns ${Math.round(type.manual_multiplier * 100)}%.`}
+          label="Usually synced from Apple Health. Entering it by hand earns the same points."
         />
       ) : null}
       {earned >= type.daily_cap ? (

@@ -2,6 +2,7 @@
  * Every call the app makes to Supabase lives here, so screens stay simple
  * and it is easy to see what the app reads and writes.
  */
+import { restDayReasonText, weekStart } from '../features/rest-days/logic';
 import { supabase } from './supabase';
 import { addDays, localDay, seasonRange } from './dates';
 import type {
@@ -20,6 +21,7 @@ import type {
   NewAchievement,
   Profile,
   ProfileUpdate,
+  RestDay,
   UserAchievement,
 } from './types';
 
@@ -29,6 +31,9 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('community_limit_reached'))
     return 'Free accounts can be in one community for now. Joining more will be part of the paid plan.';
   if (msg.includes('invalid_invite_code')) return "That invite code doesn't match any community.";
+  if (msg.includes('rest_day_too_late')) return restDayReasonText('too_late');
+  if (msg.includes('rest_day_too_far')) return restDayReasonText('too_far');
+  if (msg.includes('rest_day_week_full')) return restDayReasonText('week_full');
   if (msg.includes('Invalid login credentials')) return 'Email or password is incorrect.';
   if (/Could not find the function|does not exist|schema cache|Bucket not found/i.test(msg))
     return 'The database needs an update: run the newest file in supabase/migrations in the Supabase SQL Editor (see SETUP.md).';
@@ -206,6 +211,31 @@ export async function getMyAchievements(): Promise<UserAchievement[]> {
   return check(
     await supabase.from('user_achievements').select('achievement_key, period, earned_at').order('earned_at'),
   );
+}
+
+/** Saves the phone's time zone, so the database knows when your day and week start. */
+export async function setMyTimeZone(timeZone: string) {
+  check(await supabase.rpc('set_my_time_zone', { p_tz: timeZone }));
+}
+
+/** Your rest days from the start of this week onward. */
+export async function getMyRestDays(): Promise<RestDay[]> {
+  return check(
+    await supabase
+      .from('rest_days')
+      .select('day, created_at')
+      .gte('day', weekStart(localDay()))
+      .order('day'),
+  );
+}
+
+/** Plans a rest day. The database checks the deadline and the weekly limit. */
+export async function planRestDay(day: string) {
+  check(await supabase.rpc('plan_rest_day', { p_day: day }));
+}
+
+export async function cancelRestDay(day: string) {
+  check(await supabase.rpc('cancel_rest_day', { p_day: day }));
 }
 
 /** Checks for newly earned badges. Call after logging or syncing. */

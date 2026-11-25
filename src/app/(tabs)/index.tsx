@@ -100,7 +100,7 @@ export default function Home() {
         <Card style={{ flex: 1, gap: 6 }}>
           <IconBubble name="flame" tone="warm" size={36} />
           <Text variant="number">{stats.streak}</Text>
-          <Text variant="small">Day streak</Text>
+          <Text variant="small">{stats.rest_day_today ? 'Day streak · rest day' : 'Day streak'}</Text>
         </Card>
         <Card style={{ flex: 1, gap: 6 }}>
           <IconBubble name="bolt" tone="accent" size={36} />

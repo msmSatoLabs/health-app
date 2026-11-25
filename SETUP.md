@@ -37,6 +37,7 @@ npm install
 3. You should see "Success. No rows returned". That file creates every table, the points rules, and the security rules. Only run it once per project.
 4. Click **New query** again and do the same with `supabase/migrations/20261125010000_grant_app_access.sql`. It lets signed-in users reach the tables (newer Supabase projects don't allow that automatically). This one is safe to run more than once.
 5. Do the same with `supabase/migrations/20261126000000_social_profiles_seasons.sql`. It adds profile photos, privacy settings, the live community feed and member profiles. Also safe to run more than once.
+6. Do the same with `supabase/migrations/20261127000000_point_mechanics.sql`. It adds rest days, makes achievement points count toward scores, gives typed-in entries full points, changes sleep to 1 point per hour (max 9), and adds the `scoring_rules` table. Safe to run more than once.
 
 Each file in `supabase/migrations/` is run once, in order (the date at the start of the name is the order). When a new one shows up, run just that one.
 
@@ -84,7 +85,13 @@ Edit any file and save: the app on your phone updates in a second or two.
 
 ## Changing point values
 
-Point values, daily caps and the "manual earns half" rule live in the `activity_types` table. Edit them right in Supabase's **Table Editor**: changes apply immediately and also recalculate past days. The daily goal (40), streak minimum (10) and free community limit (1) are small functions at the top of the SQL file; edit the number and re-run just that `create or replace function ...` statement.
+All the tunable numbers are tables you can edit in Supabase's **Table Editor**. Changes apply immediately and also recalculate past days.
+
+- `activity_types`: points per unit, daily cap and biggest single entry for each activity.
+- `achievements`: `bonus_points` for each badge.
+- `scoring_rules`: daily goal (40), streak minimum (10), free community limit (1), rest days per week (1), and how far ahead a rest day can be planned (35 days).
+
+The app keeps a copy of these numbers in `src/config/scoring.ts` for its points previews. Table Editor changes are fine for trying things out. To make a change permanent, ask Claude to add it as a new migration file and update `scoring.ts` to match (`npm test` checks that the two agree).
 
 ## Apple Health (later)
 
