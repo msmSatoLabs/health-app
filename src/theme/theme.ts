@@ -27,6 +27,7 @@ const light = {
   featureInk: '#F3F6F4',
   gold: '#E9B949',
   danger: '#C2473A',
+  onAvatar: '#FFFFFF',
 };
 
 export type Palette = typeof light;
@@ -51,6 +52,7 @@ const dark: Palette = {
   featureInk: '#10251B',
   gold: '#E9B949',
   danger: '#E5776A',
+  onAvatar: '#FFFFFF',
 };
 
 export const radius = {
@@ -64,6 +66,24 @@ export const radius = {
 };
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
+
+/**
+ * Type scale, sized like Apple's Health and Fitness apps: large titles,
+ * 17pt body text, bold section headers.
+ */
+export const type = {
+  largeTitle: 34,
+  title: 28,
+  section: 22,
+  heading: 19,
+  body: 17,
+  small: 15,
+  label: 13,
+  caption: 12,
+  number: 28,
+  hero: 44,
+  tab: 11,
+};
 
 /** Manrope weights, loaded in src/app/_layout.tsx. */
 export const font = {
@@ -82,7 +102,7 @@ export const palettes = { light, dark };
 export function useTheme() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
-  return { c: isDark ? dark : light, isDark, radius, space, font };
+  return { c: isDark ? dark : light, isDark, radius, space, font, type };
 }
 
 export type Theme = ReturnType<typeof useTheme>;
