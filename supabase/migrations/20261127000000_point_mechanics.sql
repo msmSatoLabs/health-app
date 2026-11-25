@@ -48,7 +48,7 @@ create policy "scoring_rules: read" on public.scoring_rules for select to authen
 grant select on public.scoring_rules to authenticated;
 
 -- Reads one rule. Fails loudly if a rule is missing instead of guessing.
-create or replace function public.rule(p_key text) returns numeric
+create or replace function public.scoring_rule(p_key text) returns numeric
 language plpgsql stable set search_path = '' as $$
 declare v numeric;
 begin
@@ -59,13 +59,13 @@ end $$;
 
 -- The old fixed-number helpers now read from the table.
 create or replace function public.daily_goal() returns int
-language sql stable set search_path = '' as $$ select public.rule('daily_goal')::int $$;
+language sql stable set search_path = '' as $$ select public.scoring_rule('daily_goal')::int $$;
 
 create or replace function public.streak_min_points() returns int
-language sql stable set search_path = '' as $$ select public.rule('streak_min_points')::int $$;
+language sql stable set search_path = '' as $$ select public.scoring_rule('streak_min_points')::int $$;
 
 create or replace function public.free_community_limit() returns int
-language sql stable set search_path = '' as $$ select public.rule('free_community_limit')::int $$;
+language sql stable set search_path = '' as $$ select public.scoring_rule('free_community_limit')::int $$;
 
 -- ---------------------------------------------------------------------
 -- Activity point changes
@@ -156,7 +156,7 @@ grant select on public.rest_days to authenticated;
 
 create or replace function public.rest_days_per_week(p_user uuid) returns int
 language sql stable security definer set search_path = '' as $$
-  select public.rule('rest_days_per_week')::int
+  select public.scoring_rule('rest_days_per_week')::int
          + coalesce((select extra_rest_days from public.profiles where id = p_user), 0)
 $$;
 
@@ -175,7 +175,7 @@ begin
   today := public.local_today(uid);
   if exists (select 1 from public.rest_days where user_id = uid and day = p_day) then return; end if;
   if wk <= today then raise exception 'rest_day_too_late'; end if;
-  if p_day > today + public.rule('rest_day_max_days_ahead')::int then raise exception 'rest_day_too_far'; end if;
+  if p_day > today + public.scoring_rule('rest_day_max_days_ahead')::int then raise exception 'rest_day_too_far'; end if;
   if (select count(*) from public.rest_days where user_id = uid and day between wk and wk + 6)
      >= public.rest_days_per_week(uid) then
     raise exception 'rest_day_week_full';
@@ -295,7 +295,7 @@ revoke execute on function public.local_today(uuid) from public, anon, authentic
 revoke execute on function public.rest_days_per_week(uuid) from public, anon, authenticated;
 
 grant execute on function
-  public.rule(text),
+  public.scoring_rule(text),
   public.daily_goal(),
   public.streak_min_points(),
   public.free_community_limit(),
