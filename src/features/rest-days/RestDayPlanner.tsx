@@ -79,8 +79,9 @@ export function RestDayPlanner() {
   return (
     <View style={{ gap: 10 }}>
       <Text variant="small">
-        {perWeek === 1 ? 'One rest day' : `${perWeek} rest days`} per week (Monday to Sunday) keep your streak alive.
-        Plan them before the week starts, by Sunday night.
+        {perWeek === 1
+          ? 'One rest day per week (Monday to Sunday) keeps your streak alive. Plan it before the week starts, by Sunday night.'
+          : `${perWeek} rest days per week (Monday to Sunday) keep your streak alive. Plan them before the week starts, by Sunday night.`}
       </Text>
       <Card style={{ gap: 14 }}>
         <Row style={{ justifyContent: 'space-between' }}>
