@@ -34,7 +34,8 @@ npm install
 
 1. In the left sidebar, open **SQL Editor**, then **New query**.
 2. Open `supabase/migrations/20261125000000_initial_schema.sql` from this repo in any text editor, copy everything, paste it into the editor, and click **Run**.
-3. You should see "Success. No rows returned". That one file creates every table, the points rules, and the security rules. Only run it once per project.
+3. You should see "Success. No rows returned". That file creates every table, the points rules, and the security rules. Only run it once per project.
+4. Click **New query** again and do the same with `supabase/migrations/20261125010000_grant_app_access.sql`. It lets signed-in users reach the tables (newer Supabase projects don't allow that automatically). This one is safe to run more than once.
 
 Want to see what it made? Open **Table Editor**: you'll see `activity_types` (the activity list and point values) and `achievements` already filled in.
 
@@ -89,6 +90,7 @@ Expo Go can't read Apple Health, because that needs native code built into the a
 ## Troubleshooting
 
 - **"Supabase isn't connected yet" on the sign-in screen:** the `.env` file is missing or has a typo. Fix it, then stop Expo (Ctrl+C) and run `npx expo start --clear`.
+- **"permission denied for table ..." on Home:** run `20261125010000_grant_app_access.sql` in the SQL Editor (step 3), then pull down on Home to refresh.
 - **"Email not confirmed":** see "Make sign-up easy while testing" above.
 - **Expo Go says the project needs a newer/older SDK:** update Expo Go from the App Store.
 - **Type check:** `npm run typecheck` finds mistakes in the code without running it.
