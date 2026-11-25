@@ -21,6 +21,13 @@ export function estimatePoints(t: ActivityType, amount: number, source: Activity
 
 export function formatAmount(amount: number, unit: string) {
   const n = Number.isInteger(amount) ? amount.toLocaleString() : amount.toFixed(1);
-  const u = amount === 1 && unit.endsWith('s') ? unit.slice(0, -1) : unit;
+  const u = amount === 1 ? singular(unit) : unit;
   return `${n} ${u}`;
+}
+
+/** "glasses" -> "glass", "minutes" -> "minute", "kcal" -> "kcal". */
+export function singular(unit: string) {
+  if (unit.endsWith('sses')) return unit.slice(0, -2);
+  if (unit.endsWith('s')) return unit.slice(0, -1);
+  return unit;
 }

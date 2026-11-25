@@ -12,7 +12,7 @@ export default function TabsLayout() {
 
   const tab = (name: string) =>
     function TabIcon({ color }: { color: unknown }) {
-      return <Icon name={name} size={26} color={typeof color === "string" ? color : c.muted} />;
+      return <Icon name={name} size={24} color={typeof color === "string" ? color : c.muted} />;
     };
 
   return (
@@ -37,9 +37,9 @@ export default function TabsLayout() {
           tabBarIcon: () => (
             <View
               style={{
-                width: 52,
-                height: 52,
-                marginTop: 8,
+                width: 48,
+                height: 48,
+                marginTop: 4,
                 borderRadius: radius.pill,
                 backgroundColor: c.accent,
                 alignItems: 'center',
