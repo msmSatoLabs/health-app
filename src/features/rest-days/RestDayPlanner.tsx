@@ -5,7 +5,7 @@ import { cancelRestDay, friendlyError, getMyRestDays, getMyStats, planRestDay } 
 import { addDays, localDay, prettyDay, shortWeekday } from '../../lib/dates';
 import { useLoad } from '../../lib/useLoad';
 import { useTheme } from '../../theme/theme';
-import { canPlanRestDay, isBeforeDeadline, nextPlannableWeek, restDayReasonText, weekDays } from './logic';
+import { canPlanRestDay, isBeforeDeadline, nextPlannableWeek, restDayReasonText, restDayToMove, weekDays } from './logic';
 
 /** How many upcoming weeks to show (next week and the one after). */
 const WEEKS_SHOWN = 2;
@@ -54,6 +54,20 @@ export function RestDayPlanner() {
       ]);
       return;
     }
+    const from = restDayToMove(day, today, planned, perWeek);
+    if (from) {
+      run(day, async (to) => {
+        await cancelRestDay(from);
+        try {
+          await planRestDay(to);
+        } catch (e) {
+          // Put the old day back so a failed move never loses the rest day.
+          await planRestDay(from).catch(() => {});
+          throw e;
+        }
+      });
+      return;
+    }
     const check = canPlanRestDay(day, today, planned, perWeek);
     if (!check.ok) {
       setActionError(restDayReasonText(check.reason));
@@ -87,7 +101,7 @@ export function RestDayPlanner() {
                     key={d}
                     day={d}
                     on={planned.includes(d)}
-                    dimmed={full && !planned.includes(d)}
+                    dimmed={full && perWeek > 1 && !planned.includes(d)}
                     busy={busyDay === d}
                     onPress={() => onTapDay(d)}
                   />
@@ -99,7 +113,10 @@ export function RestDayPlanner() {
       </Card>
       <ErrorNote message={actionError} />
       <Text variant="caption" color={c.muted}>
-        {"Tap a day to plan it, tap it again to cancel. A rest day doesn't add to your streak, it just doesn't break it."}
+        {(perWeek === 1
+          ? 'Tap a day to plan it, tap another day to move it, or tap it again to cancel.'
+          : 'Tap a day to plan it, tap it again to cancel.') +
+          " A rest day doesn't add to your streak, it just doesn't break it."}
       </Text>
     </View>
   );

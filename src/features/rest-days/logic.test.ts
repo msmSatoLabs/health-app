@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { canPlanRestDay, isBeforeDeadline, nextPlannableWeek, weekDays, weekStart } from './logic';
+import { canPlanRestDay, isBeforeDeadline, nextPlannableWeek, restDayToMove, weekDays, weekStart } from './logic';
 
 // 2026-11-25 is a Wednesday. Its week runs Mon 23 to Sun 29.
 const WED = '2026-11-25';
@@ -72,5 +72,34 @@ describe('canPlanRestDay', () => {
 
   it('notices an already planned day', () => {
     expect(canPlanRestDay('2026-12-02', WED, ['2026-12-02'])).toEqual({ ok: false, reason: 'already_planned' });
+  });
+});
+
+describe('restDayToMove (one rest day per week)', () => {
+  it('moves the planned day when tapping another day that week', () => {
+    expect(restDayToMove('2026-12-04', WED, ['2026-12-02'])).toBe('2026-12-02');
+  });
+
+  it("isn't a move when nothing is planned that week", () => {
+    expect(restDayToMove('2026-12-04', WED, ['2026-12-09'])).toBeNull();
+    expect(restDayToMove('2026-12-04', WED, [])).toBeNull();
+  });
+
+  it("isn't a move when tapping the planned day itself (that cancels)", () => {
+    expect(restDayToMove('2026-12-02', WED, ['2026-12-02'])).toBeNull();
+  });
+
+  it("doesn't move when more than one rest day per week is allowed", () => {
+    expect(restDayToMove('2026-12-04', WED, ['2026-12-02', '2026-12-03'], 2)).toBeNull();
+    expect(restDayToMove('2026-12-04', WED, ['2026-12-02'], 2)).toBeNull();
+  });
+
+  it("doesn't move into or out of a week that has already started", () => {
+    expect(restDayToMove('2026-11-28', WED, ['2026-11-27'])).toBeNull();
+  });
+
+  it("doesn't move to a day that's too far ahead", () => {
+    // 35-day window from Wed Nov 25 ends Dec 30; Jan 1 is in the same week as Dec 30.
+    expect(restDayToMove('2027-01-01', WED, ['2026-12-30'])).toBeNull();
   });
 });

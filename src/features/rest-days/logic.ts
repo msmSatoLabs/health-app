@@ -54,6 +54,28 @@ export function canPlanRestDay(
   return { ok: true };
 }
 
+/**
+ * With one rest day per week, tapping a different day in a week that
+ * already has its rest day moves it there. Returns the day to move from,
+ * or null when it isn't a move (nothing planned that week, more than one
+ * rest day allowed, or the new day can't be planned anyway).
+ */
+export function restDayToMove(
+  day: string,
+  today: string,
+  planned: string[],
+  perWeek: number = SCORING_RULES.restDaysPerWeek,
+): string | null {
+  if (perWeek !== 1 || planned.includes(day)) return null;
+  const week = weekStart(day);
+  const sameWeek = planned.filter((p) => weekStart(p) === week);
+  if (sameWeek.length !== 1) return null;
+  const from = sameWeek[0];
+  if (!isBeforeDeadline(from, today)) return null;
+  const rest = planned.filter((p) => p !== from);
+  return canPlanRestDay(day, today, rest, perWeek).ok ? from : null;
+}
+
 export function restDayReasonText(reason: Exclude<PlanCheck, { ok: true }>['reason']): string {
   switch (reason) {
     case 'too_late':
