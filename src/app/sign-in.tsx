@@ -65,7 +65,7 @@ export default function SignIn() {
         {!isSupabaseConfigured ? (
           <Card style={{ gap: 6, backgroundColor: c.warmSoft, borderColor: c.warmSoft }}>
             <Text variant="heading" color={c.warmInk}>
-              Supabase isn't connected yet
+              Supabase isn’t connected yet
             </Text>
             <Text variant="small" color={c.warmInk}>
               Add your project URL and publishable key to a .env file, then restart Expo. SETUP.md walks through it.

@@ -1,5 +1,5 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import { subscribeToCommunities } from './api';
 
 /**
@@ -9,7 +9,10 @@ import { subscribeToCommunities } from './api';
  */
 export function useCommunityLive(communityIds: string[], onChange: () => void) {
   const cb = useRef(onChange);
-  cb.current = onChange;
+  // Keep the latest callback without re-subscribing (updated after render, as React requires).
+  useLayoutEffect(() => {
+    cb.current = onChange;
+  });
   const key = communityIds.join(',');
 
   useFocusEffect(

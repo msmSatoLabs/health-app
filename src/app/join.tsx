@@ -27,7 +27,7 @@ export default function Join() {
       <View style={{ marginTop: 32 }} />
       {error || !code ? (
         <Card style={{ gap: 12 }}>
-          <Text variant="heading">Couldn't join</Text>
+          <Text variant="heading">Couldn’t join</Text>
           <ErrorNote message={error ?? 'This invite link is missing its code.'} />
           <Button title="Go to my communities" kind="secondary" onPress={() => router.replace('/ranks')} />
         </Card>
