@@ -48,6 +48,7 @@ src/app/                 Expo Router screens (every file is a route)
   (tabs)/                Home (index), Ranks, Log (+, centered), You, Settings
   community/[id].tsx     community leaderboard + invite
   join.tsx               invite deep link: healthapp://join?code=ABC123
+  reset-password.tsx     forgot password: emailed code -> new password
 src/components/          ui.tsx (Text, Card, Button, Input, Chip, ...), Icon, Ring
 src/theme/theme.ts       ALL colors, radii, spacing, fonts (light + dark)
 src/theme/appearance.ts  saved System/Light/Dark choice (Settings → Appearance); useTheme() follows it
@@ -74,6 +75,7 @@ supabase/config.toml     Supabase CLI settings (local only; the hosted project i
 - Placeholder tuning lives in data: `activity_types` (points_per_unit, daily_cap, manual_multiplier (currently 1 everywhere), max_per_entry), `achievements.bonus_points`, and the `scoring_rules` table (daily goal, streak minimum, free community limit, rest days per week, rest-day planning window), read through `scoring_rule()` / `daily_goal()` / `streak_min_points()` / `free_community_limit()`. `src/config/scoring.ts` mirrors all of it and `src/config/scoring.test.ts` fails if they drift.
 - Scoring, streak and rest-day rules also exist as pure functions in `src/features/{points,streaks,rest-days}/logic.ts` with Jest tests. When a rule changes, change the SQL, the logic file and the tests together.
 - Rest days: `rest_days` table, changed only through `plan_rest_day()` / `cancel_rest_day()`, which use the profile's `time_zone` for the deadline. `streak_for()` skips planned rest days.
+- Accounts: password reset uses an emailed **code** (`verifyOtp` type `recovery`), not a link, so it works in Expo Go; the Supabase Reset Password template must include `{{ .Token }}` (SETUP.md). Delete account is `delete_my_account()` (security definer, deletes only the caller; hands owned communities to the earliest member). Account UI lives in `src/features/account/`, with Delete account always last in Settings.
 - Every table has RLS on. Users see only their own logs; friends see totals only through `community_leaderboard()`. Communities are created and joined only via `create_community()` / `join_community()` (they enforce the free limit).
 - Schema changes: add a **new** file with `npm run db:new -- <name>` (don't edit one that's already been run), check it with `npm run test:db`, and tell Sato in plain words to run `npm run db:push`. Don't ask Sato to paste SQL into the dashboard; that's how scripts got out of order before.
 - Never put the Supabase service_role key in the app or the repo.

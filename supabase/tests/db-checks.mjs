@@ -148,5 +148,28 @@ await as(A, async () => {
   expect('streak breaks without the rest day', s.streak, 2);
 });
 
+// Delete account: A owns "Test crew" and B joins it; C owns a community alone.
+const C = '00000000-0000-0000-0000-00000000000c';
+await db.exec(`insert into auth.users (id, email) values ('${C}', 'c@x.test')`);
+const [crew] = await q(`select id, invite_code from communities where name = 'Test crew'`);
+await as(B, () => q(`select join_community($1)`, [crew.invite_code]));
+const [solo] = await as(C, () => q(`select id from create_community('Solo')`));
+await expectError('anon cannot delete accounts', async () => {
+  await db.exec(`set role anon`);
+  try { await q(`select delete_my_account()`); } finally { await db.exec(`reset role`); }
+}, 'permission denied');
+
+await as(A, () => q(`select delete_my_account()`));
+expect('A sign-in account gone', (await q(`select count(*)::int as n from auth.users where id = $1`, [A]))[0].n, 0);
+expect('A profile gone', (await q(`select count(*)::int as n from profiles where id = $1`, [A]))[0].n, 0);
+expect('A logs gone', (await q(`select count(*)::int as n from activity_logs where user_id = $1`, [A]))[0].n, 0);
+expect('A rest days gone', (await q(`select count(*)::int as n from rest_days where user_id = $1`, [A]))[0].n, 0);
+expect('B still exists', (await q(`select count(*)::int as n from profiles where id = $1`, [B]))[0].n, 1);
+expect('crew kept, B now owns it', await q(`select created_by from communities where id = $1`, [crew.id]), [{ created_by: B }]);
+expect('B role is owner', await q(`select role from community_members where community_id = $1`, [crew.id]), [{ role: 'owner' }]);
+
+await as(C, () => q(`select delete_my_account()`));
+expect('empty community deleted with its owner', (await q(`select count(*)::int as n from communities where id = $1`, [solo.id]))[0].n, 0);
+
 console.log(fails ? `\n${fails} FAILED` : '\nall SQL checks passed');
 process.exit(fails ? 1 : 0);

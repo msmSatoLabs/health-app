@@ -17,6 +17,8 @@ import {
   SwitchRow,
   Text,
 } from '../../components/ui';
+import { ChangePassword } from '../../features/account/ChangePassword';
+import { DeleteAccount } from '../../features/account/DeleteAccount';
 import { RestDayPlanner } from '../../features/rest-days/RestDayPlanner';
 import { isDemoHealthEnabled, setDemoHealthEnabled } from '../../health';
 import { friendlyError, getActivityTypes, getMyProfile, removeAvatar, updateProfile, uploadAvatar } from '../../lib/api';
@@ -27,7 +29,7 @@ import { useLoad } from '../../lib/useLoad';
 import { setThemePreference, useThemePreference } from '../../theme/appearance';
 import { useTheme } from '../../theme/theme';
 
-/** Everything that changes your profile lives here: photo, name, privacy, appearance. */
+/** Everything that changes your profile lives here: photo, name, privacy, appearance, password, account. */
 export default function Settings() {
   const { c } = useTheme();
   const themePreference = useThemePreference();
@@ -251,8 +253,15 @@ export default function Settings() {
         <ListRow left={<IconBubble name="user" size={36} />} title="Signed in as" subtitle={session?.user.email ?? ''} />
       </Card>
 
+      <Section title="Password" />
+      <ChangePassword email={session?.user.email ?? ''} />
+
       <ErrorNote message={actionError} />
       <Button title="Sign out" kind="secondary" icon="logout" onPress={() => supabase.auth.signOut()} />
+
+      {/* Keep this last on the page. */}
+      <Section title="Delete account" />
+      <DeleteAccount userId={userId} />
     </Screen>
   );
 }
