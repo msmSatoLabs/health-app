@@ -49,8 +49,8 @@
     "test": "jest",
     "test:db": "node supabase/tests/db-checks.mjs",
     "db:link": "supabase link",
-    "db:status": "supabase migration list",
-    "db:push": "supabase db push",
+    "db:status": "supabase migration list --remote",
+    "db:push": "supabase db push --remote",
     "db:new": "supabase migration new"
   },
   "private": true,

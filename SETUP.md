@@ -55,7 +55,7 @@ Whenever a new script shows up in `supabase/migrations/` (for example after pull
 **Already ran the scripts by hand in the SQL Editor?** The CLI doesn't know that yet and would try to run them again. Tell it they're done, once, right after step 3:
 
 ```powershell
-npx supabase migration repair --status applied 20261125000000 20261125010000 20261126000000 20261127000000
+npx supabase migration repair --remote --status applied 20261125000000 20261125010000 20261126000000 20261127000000
 ```
 
 Then `npm run db:status` should show all four in both columns, and from then on `npm run db:push` only runs new scripts.
@@ -142,5 +142,5 @@ Expo Go can't read Apple Health, because that needs native code built into the a
 - **"That code is wrong or has expired":** use the code from the newest email; each new code replaces the last one.
 - **"Email not confirmed":** see "Make sign-up easy while testing" above.
 - **Expo Go says the project needs a newer/older SDK:** update Expo Go from the App Store.
-- **`db:push` says "relation ... already exists":** that script was already run by hand. Mark it as applied with `npx supabase migration repair --status applied <its date number>` (see step 3), then push again.
+- **`db:push` says "relation ... already exists":** that script was already run by hand. Mark it as applied with `npx supabase migration repair --remote --status applied <its date number>` (see step 3), then push again.
 - **Type check:** `npm run typecheck` finds mistakes in the code without running it.
