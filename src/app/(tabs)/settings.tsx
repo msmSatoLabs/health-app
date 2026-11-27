@@ -13,6 +13,7 @@ import {
   Row,
   Screen,
   Section,
+  Segmented,
   SwitchRow,
   Text,
 } from '../../components/ui';
@@ -23,11 +24,13 @@ import { useAuth, useUserId } from '../../lib/auth';
 import { supabase } from '../../lib/supabase';
 import type { ProfileUpdate } from '../../lib/types';
 import { useLoad } from '../../lib/useLoad';
+import { setThemePreference, useThemePreference } from '../../theme/appearance';
 import { useTheme } from '../../theme/theme';
 
-/** Everything that changes your profile lives here: photo, name, privacy. */
+/** Everything that changes your profile lives here: photo, name, privacy, appearance. */
 export default function Settings() {
   const { c } = useTheme();
+  const themePreference = useThemePreference();
   const { session } = useAuth();
   const userId = useUserId();
   const { data, error, reload, refresh, refreshing } = useLoad(async () => {
@@ -231,6 +234,18 @@ export default function Settings() {
         ) : null}
       </Card>
 
+      <Section title="Appearance" />
+      <Segmented
+        options={[
+          { value: 'system', label: 'System' },
+          { value: 'light', label: 'Light' },
+          { value: 'dark', label: 'Dark' },
+        ]}
+        value={themePreference}
+        onChange={setThemePreference}
+      />
+      <Text variant="caption">System matches your iPhone’s light or dark setting.</Text>
+
       <Section title="Account" />
       <Card>
         <ListRow left={<IconBubble name="user" size={36} />} title="Signed in as" subtitle={session?.user.email ?? ''} />
@@ -250,9 +265,8 @@ function DbUpdateNote() {
         Database update needed
       </Text>
       <Text variant="small" color={c.warmInk}>
-        Photos and privacy settings need the newest database script. In Supabase, run
-        supabase/migrations/20261126000000_social_profiles_seasons.sql in the SQL Editor, then pull down here to
-        refresh.
+        Photos and privacy settings need the newest database scripts. On your computer, run npm run db:push in the
+        project folder, then pull down here to refresh.
       </Text>
     </Card>
   );
