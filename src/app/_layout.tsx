@@ -58,6 +58,7 @@ function RootStack() {
         <Stack.Screen name="community/[id]" options={{ headerShown: true, title: '', headerBackTitle: 'Back' }} />
         <Stack.Screen name="member/[id]" options={{ headerShown: true, title: '', headerBackTitle: 'Back' }} />
         <Stack.Screen name="join" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="reset-password" options={{ headerShown: true, title: '', headerBackTitle: 'Back' }} />
       </Stack>
     </>
   );

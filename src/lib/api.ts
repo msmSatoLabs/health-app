@@ -35,8 +35,14 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('rest_day_too_far')) return restDayReasonText('too_far');
   if (msg.includes('rest_day_week_full')) return restDayReasonText('week_full');
   if (msg.includes('Invalid login credentials')) return 'Email or password is incorrect.';
+  if (msg.includes('current_password_wrong')) return 'Your current password is incorrect.';
+  if (/token has expired or is invalid|otp.*(expired|invalid)/i.test(msg))
+    return 'That code is wrong or has expired. Check the newest email, or send a new code.';
+  if (/rate limit|only request this after|too many/i.test(msg))
+    return 'Too many tries for now. Wait a minute, then try again.';
+  if (/should be different from the old/i.test(msg)) return 'Pick a password different from your current one.';
   if (/Could not find the function|does not exist|schema cache|Bucket not found/i.test(msg))
-    return 'The database needs an update: run the newest file in supabase/migrations in the Supabase SQL Editor (see SETUP.md).';
+    return 'The database needs an update: run npm run db:push on your computer (see SETUP.md).';
   return msg;
 }
 
@@ -76,6 +82,49 @@ async function removeOldAvatars(userId: string, keepPath: string | null) {
   const files = check(await supabase.storage.from(AVATAR_BUCKET).list(userId));
   const old = files.map((f) => `${userId}/${f.name}`).filter((p) => p !== keepPath);
   if (old.length) check(await supabase.storage.from(AVATAR_BUCKET).remove(old));
+}
+
+// ---------------------------------------------------------------------------
+// Passwords and account
+
+/**
+ * Emails a reset code to this address. Supabase sends it even when signed out.
+ * For security it doesn't say whether the email has an account.
+ */
+export async function requestPasswordReset(email: string) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+  if (error) throw error;
+}
+
+/** Checks the emailed code. On success the person is signed in, so the new password can be saved. */
+export async function verifyResetCode(email: string, code: string) {
+  const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code, type: 'recovery' });
+  if (error) throw error;
+}
+
+/** Saves a new password for the signed-in person (after verifyResetCode). */
+export async function setNewPassword(newPassword: string) {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+}
+
+/** Changes the password from Settings after checking the current one. */
+export async function changePassword(email: string, currentPassword: string, newPassword: string) {
+  const { error: checkError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+  if (checkError) throw new Error('current_password_wrong');
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+}
+
+/**
+ * Permanently deletes the signed-in account and its data (see the delete_account
+ * migration). The profile photo is removed first, since the database can't delete Storage files.
+ */
+export async function deleteMyAccount(userId: string) {
+  await removeOldAvatars(userId, null);
+  check(await supabase.rpc('delete_my_account'));
+  // The account no longer exists, so only clear the session saved on this phone.
+  await supabase.auth.signOut({ scope: 'local' });
 }
 
 export async function getActivityTypes(): Promise<ActivityType[]> {

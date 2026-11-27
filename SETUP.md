@@ -66,6 +66,23 @@ Want to see what it made? Open **Table Editor** in Supabase: you'll see `activit
 
 By default Supabase emails a confirmation link before a new account can sign in. For testing, turn that off: **Authentication → Sign In / Providers → Email**, switch off **Confirm email**, and save. Turn it back on before real users join.
 
+### Password reset emails (once)
+
+"Forgot password?" emails a code that the person types into the app. A typed code works the same in Expo Go, in Safari and in the real app, while email links can't reliably open the app during development. Supabase's standard reset email only has a link, so add the code to it:
+
+1. In Supabase, open **Authentication → Emails → Templates** (older dashboards: **Authentication → Email Templates**) and pick **Reset Password**.
+2. Set the subject to `Your Pulse password reset code`.
+3. Replace the message body with:
+   ```html
+   <h2>Reset your password</h2>
+   <p>Enter this code in the app:</p>
+   <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px;">{{ .Token }}</p>
+   <p>The code works for 1 hour. If you didn't ask to reset your password, you can ignore this email.</p>
+   ```
+4. Save.
+
+**Who gets emails:** Supabase's built-in email sender only delivers to members of your Supabase team, and only a few emails per hour. That's fine for testing with your own account. Before friends or real users rely on sign-up confirmation or password resets, connect a real email service under **Authentication → Emails → SMTP Settings** (for example Resend, which has a free tier).
+
 ## 4. Connect the app to Supabase
 
 1. In Supabase, click **Connect** at the top. Under "Set environment variables" you need two values:
@@ -121,6 +138,8 @@ Expo Go can't read Apple Health, because that needs native code built into the a
 - **"Supabase isn't connected yet" on the sign-in screen:** the `.env` file is missing or has a typo. Fix it, then stop Expo (Ctrl+C) and run `npx expo start --clear`.
 - **"permission denied for table ..." or "function ... does not exist":** the database is missing a script. Run `npm run db:status`, then `npm run db:push`, then pull down on Home to refresh.
 - **Profile photo won't upload, or leaderboards don't update live:** make sure `npm run db:status` shows `20261126000000` under Remote. For live updates, also check **Database → Publications → supabase_realtime** includes `community_events`.
+- **Reset code email never arrives:** check spam, wait a minute, then tap **Send a new code**. If it still doesn't come, the address probably isn't on your Supabase team (see "Password reset emails" above). The app always says a code is on its way, on purpose, so nobody can use it to find out which emails have accounts.
+- **"That code is wrong or has expired":** use the code from the newest email; each new code replaces the last one.
 - **"Email not confirmed":** see "Make sign-up easy while testing" above.
 - **Expo Go says the project needs a newer/older SDK:** update Expo Go from the App Store.
 - **`db:push` says "relation ... already exists":** that script was already run by hand. Mark it as applied with `npx supabase migration repair --status applied <its date number>` (see step 3), then push again.

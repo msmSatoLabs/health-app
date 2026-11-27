@@ -1,6 +1,6 @@
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
 import { Button, Card, ErrorNote, Input, Screen, Segmented, Text } from '../components/ui';
 import { friendlyError } from '../lib/api';
 import { useAuth } from '../lib/auth';
@@ -92,6 +92,18 @@ export default function SignIn() {
             autoComplete="email"
           />
           <Input placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" />
+          {mode === 'in' ? (
+            <Pressable
+              onPress={() => router.push({ pathname: '/reset-password', params: { email: email.trim() } })}
+              accessibilityRole="button"
+              hitSlop={8}
+              style={{ alignSelf: 'flex-end' }}
+            >
+              <Text variant="small" color={c.accent}>
+                Forgot password?
+              </Text>
+            </Pressable>
+          ) : null}
           <ErrorNote message={error} />
           {notice ? (
             <Text variant="small" color={c.accentInk}>
