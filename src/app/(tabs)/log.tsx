@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 import { useGridTileWidth, Button, Card, Chip, ErrorNote, Loading, ProgressBar, Row, Screen, Text } from '../../components/ui';
 import { Icon } from '../../components/Icon';
@@ -22,10 +22,13 @@ export default function Log() {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const type = data?.types.find((t) => t.key === selected);
-  useEffect(() => {
-    setAmount(stepper[selected]?.start ?? 1);
+
+  // Switching activity resets the amount to that activity's starting value.
+  function selectType(key: string) {
+    setSelected(key);
+    setAmount(stepper[key]?.start ?? 1);
     setSaveError(null);
-  }, [selected]);
+  }
 
   if (!data || !type) {
     return (
@@ -71,7 +74,7 @@ export default function Log() {
           return (
             <Pressable
               key={t.key}
-              onPress={() => setSelected(t.key)}
+              onPress={() => selectType(t.key)}
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
               style={{
@@ -136,7 +139,7 @@ export default function Log() {
         />
       ) : null}
       {earned >= type.daily_cap ? (
-        <Text variant="small">You've hit today's cap for this one. Nice. Rest counts too.</Text>
+        <Text variant="small">You’ve hit today’s cap for this one. Nice. Rest counts too.</Text>
       ) : null}
 
       <ErrorNote message={saveError} />

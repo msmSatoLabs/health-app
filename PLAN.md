@@ -13,7 +13,7 @@ The first version (PR #2) covers most of Phases 0 to 6 in one pass. It runs in E
 - Entries are in `activity_logs` with `source` = `health` or `manual`.
 - Free community limit is set to **1**, matching the Notion plan ("joining more than one community" is paid). It's one number in `free_community_limit()`.
 - Tabs are Home, Ranks, Log (+, centered), You, Settings.
-- Checks: `npm test` (Jest, pure scoring/streak/rest-day logic), `npm run test:db` (all migrations against an in-memory Postgres), `npm run typecheck`, `npx expo export --platform ios`. ESLint is set up (`npm run lint`) but older screens still have a few errors.
+- Checks: `npm test` (Jest, pure scoring/streak/rest-day logic), `npm run test:db` (all migrations against an in-memory Postgres), `npm run typecheck`, `npx expo export --platform ios`. `npm run lint` (ESLint) passes. Migrations are applied with the Supabase CLI (`npm run db:push`).
 
 **Added Nov 26:** live leaderboards and a community activity feed (Supabase Realtime on `community_events`), member profiles that respect privacy settings, profile photos (Supabase Storage `avatars` bucket), privacy toggles (streak, achievements, per-activity), history by week/month/year and seasons (a season = one calendar month; community leaderboards can show current and past seasons), activity trends (last 7 days vs the 4 weeks before), achievements show date earned and a placeholder point value, larger Apple Health/Fitness-style layout. All profile editing lives in Settings.
 

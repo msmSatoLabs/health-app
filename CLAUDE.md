@@ -29,7 +29,10 @@ npx expo start --tunnel   # if phone and PC can't see each other on Wi-Fi
 npm run typecheck         # tsc --noEmit; run before finishing any change
 npm test                  # Jest unit tests (scoring, streaks, rest days, config vs SQL)
 npm run test:db           # migrations + rule checks on an in-memory Postgres
-npm run lint              # ESLint (some older screens still have errors)
+npm run lint              # ESLint; must pass
+npm run db:new -- <name>  # new migration file in supabase/migrations
+npm run db:status         # migrations on the hosted project (Remote) vs the repo (Local)
+npm run db:push           # apply new migrations to the hosted project, in order
 npx expo install <pkg>    # ALWAYS use this to add packages (picks SDK-compatible versions)
 npx expo export --platform ios   # quick check that the bundle builds
 ```
@@ -49,7 +52,8 @@ src/components/          ui.tsx (Text, Card, Button, Input, Chip, ...), Icon, Ri
 src/theme/theme.ts       ALL colors, radii, spacing, fonts (light + dark)
 src/lib/                 supabase client, api.ts (every Supabase call), auth, dates, types
 src/health/              HealthSource interface; HealthKit stub; demo data for Expo Go
-supabase/migrations/     SQL schema; run in the Supabase SQL editor
+supabase/migrations/     SQL schema; applied with `npm run db:push` (Supabase CLI)
+supabase/config.toml     Supabase CLI settings (local only; the hosted project is linked with `npm run db:link`)
 ```
 
 ## Conventions
@@ -70,7 +74,7 @@ supabase/migrations/     SQL schema; run in the Supabase SQL editor
 - Scoring, streak and rest-day rules also exist as pure functions in `src/features/{points,streaks,rest-days}/logic.ts` with Jest tests. When a rule changes, change the SQL, the logic file and the tests together.
 - Rest days: `rest_days` table, changed only through `plan_rest_day()` / `cancel_rest_day()`, which use the profile's `time_zone` for the deadline. `streak_for()` skips planned rest days.
 - Every table has RLS on. Users see only their own logs; friends see totals only through `community_leaderboard()`. Communities are created and joined only via `create_community()` / `join_community()` (they enforce the free limit).
-- Schema changes: add a **new** file in `supabase/migrations/` (don't edit one that's already been run), make it safe to paste into the SQL editor, and tell Sato in plain words what to run.
+- Schema changes: add a **new** file with `npm run db:new -- <name>` (don't edit one that's already been run), check it with `npm run test:db`, and tell Sato in plain words to run `npm run db:push`. Don't ask Sato to paste SQL into the dashboard; that's how scripts got out of order before.
 - Never put the Supabase service_role key in the app or the repo.
 
 ## Healthy limits and privacy (product rules, not polish)

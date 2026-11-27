@@ -200,7 +200,7 @@ export default function Settings() {
         ))}
       </Card>
       <Text variant="caption">
-        Hidden activities still count toward your points, but friends won't see them on your profile or in the
+        Hidden activities still count toward your points, but friends won’t see them on your profile or in the
         community feed.
       </Text>
 

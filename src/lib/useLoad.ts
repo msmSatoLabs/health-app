@@ -1,5 +1,5 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { friendlyError } from './api';
 
 /** Loads data when a screen comes into view, with pull-to-refresh support. */
@@ -8,7 +8,10 @@ export function useLoad<T>(loader: () => Promise<T>) {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const loaderRef = useRef(loader);
-  loaderRef.current = loader;
+  // Keep the latest callback without re-subscribing (updated after render, as React requires).
+  useLayoutEffect(() => {
+    loaderRef.current = loader;
+  });
 
   const reload = useCallback(async () => {
     try {
