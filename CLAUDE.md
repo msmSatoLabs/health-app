@@ -50,6 +50,7 @@ src/app/                 Expo Router screens (every file is a route)
   join.tsx               invite deep link: healthapp://join?code=ABC123
 src/components/          ui.tsx (Text, Card, Button, Input, Chip, ...), Icon, Ring
 src/theme/theme.ts       ALL colors, radii, spacing, fonts (light + dark)
+src/theme/appearance.ts  saved System/Light/Dark choice (Settings → Appearance); useTheme() follows it
 src/lib/                 supabase client, api.ts (every Supabase call), auth, dates, types
 src/health/              HealthSource interface; HealthKit stub; demo data for Expo Go
 supabase/migrations/     SQL schema; applied with `npm run db:push` (Supabase CLI)

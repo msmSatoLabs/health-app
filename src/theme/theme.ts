@@ -5,6 +5,7 @@
  * Change values here and the whole app follows.
  */
 import { useColorScheme } from 'react-native';
+import { resolveIsDark, useThemePreference } from './appearance';
 
 const light = {
   bg: '#F3F6F4',
@@ -99,9 +100,11 @@ export const avatarColors = ['#E07A5F', '#3D9970', '#6C5CE7', '#F2A541', '#2D9CD
 
 export const palettes = { light, dark };
 
+/** Colors follow the choice in Settings → Appearance (System, Light or Dark). */
 export function useTheme() {
   const scheme = useColorScheme();
-  const isDark = scheme === 'dark';
+  const preference = useThemePreference();
+  const isDark = resolveIsDark(preference, scheme);
   return { c: isDark ? dark : light, isDark, radius, space, font, type };
 }
 
