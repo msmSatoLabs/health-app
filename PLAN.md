@@ -2,7 +2,7 @@
 
 Product plan and MVP build order. Working conventions are in [CLAUDE.md](CLAUDE.md). The longer-form plan lives in Notion (Projects / Health app / Plan); this file is the version to build from.
 
-## Where things stand (Nov 25, 2026)
+## Where things stand (Nov 27, 2026)
 
 The first version (PR #2) covers most of Phases 0 to 6 in one pass. It runs in Expo Go against a hosted Supabase project; setup steps are in [SETUP.md](SETUP.md).
 
@@ -24,7 +24,17 @@ The first version (PR #2) covers most of Phases 0 to 6 in one pass. It runs in E
 - Rest days: one per week (Monday to Sunday), planned before that week starts (deadline: end of the Sunday before), cancellable until then. A rest day keeps a streak alive without adding to it. `profiles.extra_rest_days` raises the weekly allowance for a future paid plan (not editable from the app).
 - Time zone is saved on the profile and used for the rest-day deadline.
 
-**Not built yet:** buying extra rest days, weekly recap card, checking achievements on a schedule (today they're checked when the app logs or syncs).
+**Added Nov 27 (finishing the structure, PRs #7 to #10):**
+- `npm run lint` passes. Supabase CLI set up and linked to the hosted project: `npm run db:status` / `npm run db:push` apply migrations in order (CLI v3 needs `--remote`, already in the scripts).
+- Settings → Appearance: System / Light / Dark, remembered on the device.
+- Forgot password (sign-in screen and Settings): emailed 6-digit code → new password. Supabase's Reset Password template sends `{{ .Token }}`, and email goes through custom SMTP (Gmail for now).
+- Settings → Password: change password (checks the current one).
+- Settings → Delete account (last on the page, type DELETE to confirm): `delete_my_account()` removes the account and its data; communities they created pass to the earliest member.
+- Tested on the phone: live leaderboard with two accounts, profile photo upload, appearance, password reset, delete account.
+
+**The app's structure is complete.** Next is the "Fresh" design pass.
+
+**Not built yet:** buying extra rest days, weekly recap card, checking achievements on a schedule (today they're checked when the app logs or syncs), reopening on the last tab after a full quit (decided not needed), Phase 7 (Apple Developer account: Sign in with Apple, privacy policy, HealthKit, TestFlight).
 
 ## Product
 
