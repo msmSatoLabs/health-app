@@ -32,16 +32,35 @@ npm install
 
 ### Create the database tables
 
-1. In the left sidebar, open **SQL Editor**, then **New query**.
-2. Open `supabase/migrations/20261125000000_initial_schema.sql` from this repo in any text editor, copy everything, paste it into the editor, and click **Run**.
-3. You should see "Success. No rows returned". That file creates every table, the points rules, and the security rules. Only run it once per project.
-4. Click **New query** again and do the same with `supabase/migrations/20261125010000_grant_app_access.sql`. It lets signed-in users reach the tables (newer Supabase projects don't allow that automatically). This one is safe to run more than once.
-5. Do the same with `supabase/migrations/20261126000000_social_profiles_seasons.sql`. It adds profile photos, privacy settings, the live community feed and member profiles. Also safe to run more than once.
-6. Do the same with `supabase/migrations/20261127000000_point_mechanics.sql`. It adds rest days, makes achievement points count toward scores, gives typed-in entries full points, changes sleep to 1 point per hour (max 9), and adds the `scoring_rules` table. Safe to run more than once.
+The database is built from the SQL scripts in `supabase/migrations/`. Each one is a single change (new tables, new rules), and the date at the start of the name sets the order. The **Supabase CLI** (installed by `npm install`) applies them for you, in order, and remembers which ones it has already run, so nothing gets skipped or run twice.
 
-Each file in `supabase/migrations/` is run once, in order (the date at the start of the name is the order). When a new one shows up, run just that one.
+1. Find your **project ref**: it's the part of your project URL before `.supabase.co` (in `https://abcd1234.supabase.co` it's `abcd1234`).
+2. In PowerShell, in the `health-app` folder:
+   ```powershell
+   npx supabase login
+   ```
+   A browser tab opens; approve it. This lets the CLI talk to your Supabase account. You only do it once per computer.
+3. Connect this folder to your project (it asks for the database password you saved):
+   ```powershell
+   npm run db:link -- --project-ref abcd1234
+   ```
+4. Apply every script that hasn't been run yet:
+   ```powershell
+   npm run db:push
+   ```
+   It lists the scripts it will run and asks you to confirm.
 
-Want to see what it made? Open **Table Editor**: you'll see `activity_types` (the activity list and point values) and `achievements` already filled in.
+Whenever a new script shows up in `supabase/migrations/` (for example after pulling new code), run `npm run db:push` again. `npm run db:status` shows which scripts the project has (Remote column) next to the ones in the repo (Local column).
+
+**Already ran the scripts by hand in the SQL Editor?** The CLI doesn't know that yet and would try to run them again. Tell it they're done, once, right after step 3:
+
+```powershell
+npx supabase migration repair --status applied 20261125000000 20261125010000 20261126000000 20261127000000
+```
+
+Then `npm run db:status` should show all four in both columns, and from then on `npm run db:push` only runs new scripts.
+
+Want to see what it made? Open **Table Editor** in Supabase: you'll see `activity_types` (the activity list and point values) and `achievements` already filled in.
 
 ### Make sign-up easy while testing
 
@@ -91,7 +110,7 @@ All the tunable numbers are tables you can edit in Supabase's **Table Editor**. 
 - `achievements`: `bonus_points` for each badge.
 - `scoring_rules`: daily goal (40), streak minimum (10), free community limit (1), rest days per week (1), and how far ahead a rest day can be planned (35 days).
 
-The app keeps a copy of these numbers in `src/config/scoring.ts` for its points previews. Table Editor changes are fine for trying things out. To make a change permanent, ask Claude to add it as a new migration file and update `scoring.ts` to match (`npm test` checks that the two agree).
+The app keeps a copy of these numbers in `src/config/scoring.ts` for its points previews. Table Editor changes are fine for trying things out. To make a change permanent, ask Claude to add it as a new migration file (then `npm run db:push`) and update `scoring.ts` to match (`npm test` checks that the two agree).
 
 ## Apple Health (later)
 
@@ -100,8 +119,9 @@ Expo Go can't read Apple Health, because that needs native code built into the a
 ## Troubleshooting
 
 - **"Supabase isn't connected yet" on the sign-in screen:** the `.env` file is missing or has a typo. Fix it, then stop Expo (Ctrl+C) and run `npx expo start --clear`.
-- **"permission denied for table ..." on Home:** run `20261125010000_grant_app_access.sql` in the SQL Editor (step 3), then pull down on Home to refresh.
-- **Profile photo won't upload, or leaderboards don't update live:** make sure you ran `20261126000000_social_profiles_seasons.sql`. For live updates, also check **Database → Publications → supabase_realtime** includes `community_events`.
+- **"permission denied for table ..." or "function ... does not exist":** the database is missing a script. Run `npm run db:status`, then `npm run db:push`, then pull down on Home to refresh.
+- **Profile photo won't upload, or leaderboards don't update live:** make sure `npm run db:status` shows `20261126000000` under Remote. For live updates, also check **Database → Publications → supabase_realtime** includes `community_events`.
 - **"Email not confirmed":** see "Make sign-up easy while testing" above.
 - **Expo Go says the project needs a newer/older SDK:** update Expo Go from the App Store.
+- **`db:push` says "relation ... already exists":** that script was already run by hand. Mark it as applied with `npx supabase migration repair --status applied <its date number>` (see step 3), then push again.
 - **Type check:** `npm run typecheck` finds mistakes in the code without running it.
