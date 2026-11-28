@@ -32,7 +32,9 @@ The first version (PR #2) covers most of Phases 0 to 6 in one pass. It runs in E
 - Settings → Delete account (last on the page, type DELETE to confirm): `delete_my_account()` removes the account and its data; communities they created pass to the earliest member.
 - Tested on the phone: live leaderboard with two accounts, profile photo upload, appearance, password reset, delete account.
 
-**The app's structure is complete.** Next is the "Fresh" design pass.
+**The app's structure is complete.**
+
+**Added Nov 27 (Fresh design pass, branch `claude/design-foundations`):** every screen restyled to match the Fresh mockups. Each activity and badge has its own tint color (`activityColors` in the theme). New shared pieces: `MiniStat`, `FeatureCard`, `AvatarStack`, `ActivityTile`, `Stepper`, `ProfileHeader`, `StatTile`, `BadgeTile`, `Group`, `Notice` (in `ui.tsx`) and `Podium` / `LeaderRow` (`Leaderboard.tsx`). Home has the ring with streak and goal beside it; Log has tinted tiles, a stepper and a streak hint; community pages have a top-3 podium; profiles have a centered header, stat tiles and a badge grid; Settings uses grouped rows.
 
 **Not built yet:** buying extra rest days, weekly recap card, checking achievements on a schedule (today they're checked when the app logs or syncs), reopening on the last tab after a full quit (decided not needed), Phase 7 (Apple Developer account: Sign in with Apple, privacy policy, HealthKit, TestFlight).
 

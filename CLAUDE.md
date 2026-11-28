@@ -49,7 +49,7 @@ src/app/                 Expo Router screens (every file is a route)
   community/[id].tsx     community leaderboard + invite
   join.tsx               invite deep link: healthapp://join?code=ABC123
   reset-password.tsx     forgot password: emailed code -> new password
-src/components/          ui.tsx (Text, Card, Button, Input, Chip, ...), Icon, Ring
+src/components/          ui.tsx (Text, Card, Button, Input, Chip, Group, StatTile, ...), Icon, Ring, Leaderboard (Podium, LeaderRow)
 src/theme/theme.ts       ALL colors, radii, spacing, fonts (light + dark)
 src/theme/appearance.ts  saved System/Light/Dark choice (Settings → Appearance); useTheme() follows it
 src/lib/                 supabase client, api.ts (every Supabase call), auth, dates, types
@@ -61,7 +61,7 @@ supabase/config.toml     Supabase CLI settings (local only; the hosted project i
 ## Conventions
 
 - **Design: "Fresh" direction.** Calm and airy, one sage-green accent (#2E9C73 light / #4CC596 dark), white cards with hairline borders and **no shadows**, 22px card corners, pill buttons, Manrope, light and dark mode. Mockups: https://claude.ai/artifact/JwGB5rHJCaS6rP44mmUQWU
-- **Never hard-code colors or radii in screens.** Use `useTheme()` from `src/theme/theme.ts`. Add new tokens there.
+- **Never hard-code colors or radii in screens.** Use `useTheme()` from `src/theme/theme.ts`. Add new tokens there. Activity and badge tints come from `activityColors` (keyed by icon name); add a color there when adding an icon.
 - Use the shared components in `src/components/ui.tsx` before writing new styled views. With custom fonts, change weight via `fontFamily` (`font.bold`, etc.), not `fontWeight`.
 - **All Supabase calls go through `src/lib/api.ts`.** Keep `src/lib/types.ts` in sync with the SQL.
 - Screens load data with `useLoad()` (reloads on focus, supports pull-to-refresh).
