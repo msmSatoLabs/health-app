@@ -2,19 +2,21 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
-import { useGridTileWidth, Button, Card, Chip, ErrorNote, Loading, ProgressBar, Row, Screen, Text } from '../../components/ui';
+import { ActivityTile, Button, Card, Chip, ErrorNote, Loading, ProgressBar, Row, Screen, Stepper, Text, useGridTileWidth } from '../../components/ui';
 import { Icon } from '../../components/Icon';
-import { evaluateAchievements, friendlyError, getActivityTypes, getTodayBreakdown, logActivity } from '../../lib/api';
+import { SCORING_RULES } from '../../config/scoring';
+import { streakHint } from '../../features/streaks/logic';
+import { evaluateAchievements, friendlyError, getActivityTypes, getMyStats, getTodayBreakdown, logActivity } from '../../lib/api';
 import { estimatePoints, formatAmount, stepper } from '../../lib/activityUi';
 import { useLoad } from '../../lib/useLoad';
 import { useTheme } from '../../theme/theme';
 
 export default function Log() {
   const tile = useGridTileWidth(4, 10);
-  const { c, radius, type: typeScale } = useTheme();
+  const { c, radius } = useTheme();
   const { data, error } = useLoad(async () => {
-    const [types, today] = await Promise.all([getActivityTypes(), getTodayBreakdown()]);
-    return { types, today };
+    const [types, today, stats] = await Promise.all([getActivityTypes(), getTodayBreakdown(), getMyStats()]);
+    return { types, today, stats };
   });
   const [selected, setSelected] = useState<string>('water');
   const [amount, setAmount] = useState(stepper.water.start);
@@ -45,6 +47,14 @@ export default function Log() {
   const earned = todayRow?.points ?? 0;
   const preview = estimatePoints(type, amount, todayRow?.amount ?? 0);
   const isHealthType = type.source === 'health';
+  const capped = earned >= type.daily_cap;
+  const hint = streakHint(data.stats.today_points, preview, SCORING_RULES.streakMinPoints);
+  const hintText =
+    hint.kind === 'counted'
+      ? 'Today already counts for your streak'
+      : hint.kind === 'keeps'
+        ? 'This keeps your streak going'
+        : `${hint.pointsNeeded} more pts today for your streak`;
 
   async function save() {
     setBusy(true);
@@ -66,64 +76,45 @@ export default function Log() {
 
   return (
     <Screen>
-      <Text variant="largeTitle">Log activity</Text>
+      <Row style={{ justifyContent: 'space-between' }}>
+        <Text variant="largeTitle">Log activity</Text>
+        <Pressable
+          onPress={() => router.navigate('/')}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+          hitSlop={8}
+          style={{ width: 40, height: 40, borderRadius: radius.pill, backgroundColor: c.chipBg, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Icon name="close" size={20} color={c.ink} />
+        </Pressable>
+      </Row>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-        {data.types.map((t) => {
-          const on = t.key === selected;
-          return (
-            <Pressable
-              key={t.key}
-              onPress={() => selectType(t.key)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: on }}
-              style={{
-                width: tile,
-                alignItems: 'center',
-                gap: 8,
-                paddingVertical: 16,
-                borderRadius: radius.tile,
-                backgroundColor: on ? c.accent : c.surface,
-                borderWidth: 1,
-                borderColor: on ? c.accent : c.cardBorder,
-              }}
-            >
-              <Icon name={t.icon} size={30} color={on ? c.onAccent : c.accentInk} />
-              <Text variant="caption" color={on ? c.onAccent : c.ink} numberOfLines={1}>
-                {t.label}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {data.types.map((t) => (
+          <ActivityTile
+            key={t.key}
+            icon={t.icon}
+            label={t.label}
+            selected={t.key === selected}
+            onPress={() => selectType(t.key)}
+            width={tile}
+          />
+        ))}
       </View>
 
-      <Card style={{ gap: 20, paddingVertical: 24 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <Pressable
-            accessibilityLabel="Less"
-            onPress={() => setAmount((a) => Math.max(step, +(a - step).toFixed(2)))}
-            style={{ width: 60, height: 60, borderRadius: radius.pill, backgroundColor: c.chipBg, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Icon name="minus" size={28} color={c.ink} />
-          </Pressable>
-          <View style={{ alignItems: 'center' }}>
-            <Text variant="number" style={{ fontSize: typeScale.hero }}>
-              {Number.isInteger(amount) ? amount.toLocaleString() : amount.toFixed(1)}
-            </Text>
-            <Text variant="body" color={c.muted}>{type.unit}</Text>
-          </View>
-          <Pressable
-            accessibilityLabel="More"
-            onPress={() => setAmount((a) => Math.min(type.max_per_entry, +(a + step).toFixed(2)))}
-            style={{ width: 60, height: 60, borderRadius: radius.pill, backgroundColor: c.chipBg, alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Icon name="plus" size={28} color={c.ink} />
-          </Pressable>
-        </Row>
+      <Card style={{ gap: 20, paddingVertical: 22 }}>
+        <Stepper
+          value={Number.isInteger(amount) ? amount.toLocaleString() : amount.toFixed(1)}
+          unit={type.unit}
+          onLess={() => setAmount((a) => Math.max(step, +(a - step).toFixed(2)))}
+          onMore={() => setAmount((a) => Math.min(type.max_per_entry, +(a + step).toFixed(2)))}
+          canLess={amount > step}
+          canMore={amount < type.max_per_entry}
+        />
         <View style={{ gap: 6 }}>
           <Row style={{ justifyContent: 'space-between' }}>
             <Text variant="small">Daily cap for {type.label.toLowerCase()}</Text>
-            <Text variant="small">
+            <Text variant="small" style={{ fontVariant: ['tabular-nums'] }}>
               {earned} / {type.daily_cap} pts
             </Text>
           </Row>
@@ -131,14 +122,15 @@ export default function Log() {
         </View>
       </Card>
 
-      {isHealthType ? (
-        <Chip
-          tone="warm"
-          icon="heart"
-          label="Usually synced from Apple Health. Entering it by hand earns the same points."
-        />
-      ) : null}
-      {earned >= type.daily_cap ? (
+      <Row style={{ justifyContent: 'space-between', flexWrap: 'wrap', paddingHorizontal: 4 }}>
+        <Row style={{ gap: 6, flexShrink: 1 }}>
+          <Icon name="flame" size={16} color={c.warmInk} />
+          <Text variant="caption">{hintText}</Text>
+        </Row>
+        {isHealthType ? <Chip tone="muted" icon="heart" label="Usually from Apple Health" /> : null}
+      </Row>
+
+      {capped ? (
         <Text variant="small">You’ve hit today’s cap for this one. Nice. Rest counts too.</Text>
       ) : null}
 

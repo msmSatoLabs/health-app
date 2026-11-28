@@ -34,3 +34,19 @@ export function computeStreak(
   }
   return streak;
 }
+
+export type StreakHint =
+  | { kind: 'counted' } // today already has enough points for the streak
+  | { kind: 'keeps' } // this entry is what makes today count
+  | { kind: 'short'; pointsNeeded: number }; // still not enough after this entry
+
+/**
+ * What logging `addPoints` more would mean for today's streak, given the
+ * points already earned today and the streak minimum. Preview only: the
+ * database decides the real streak.
+ */
+export function streakHint(todayPoints: number, addPoints: number, minPoints: number): StreakHint {
+  if (todayPoints >= minPoints) return { kind: 'counted' };
+  if (todayPoints + addPoints >= minPoints) return { kind: 'keeps' };
+  return { kind: 'short', pointsNeeded: minPoints - todayPoints - addPoints };
+}

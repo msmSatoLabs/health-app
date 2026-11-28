@@ -299,6 +299,111 @@ export function FeatureCard({
   );
 }
 
+/** A square activity choice: tinted round icon over a label. Accent-filled when selected. */
+export function ActivityTile({
+  icon,
+  label,
+  selected,
+  onPress,
+  width,
+}: {
+  icon: string;
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  width: number;
+}) {
+  const { c, radius, isDark, font } = useTheme();
+  const tint = activityColors[icon] ?? c.accent;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+      style={({ pressed }) => ({
+        width,
+        alignItems: 'center',
+        gap: 8,
+        paddingVertical: 14,
+        paddingHorizontal: 4,
+        borderRadius: radius.tile,
+        backgroundColor: selected ? c.accent : c.surface,
+        borderWidth: 1,
+        borderColor: selected ? c.accent : c.cardBorder,
+        opacity: pressed ? 0.85 : 1,
+      })}
+    >
+      <View
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: selected ? withAlpha(c.onAccent, 0.2) : withAlpha(tint, isDark ? 0.22 : 0.14),
+        }}
+      >
+        <Icon name={icon} size={23} color={selected ? c.onAccent : tint} />
+      </View>
+      <Text variant="caption" color={selected ? c.onAccent : c.ink} numberOfLines={1} style={{ fontFamily: font.semibold }}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+/** Round − and + buttons around a big number with its unit underneath. */
+export function Stepper({
+  value,
+  unit,
+  onLess,
+  onMore,
+  canLess = true,
+  canMore = true,
+}: {
+  value: string;
+  unit: string;
+  onLess: () => void;
+  onMore: () => void;
+  canLess?: boolean;
+  canMore?: boolean;
+}) {
+  const { c, radius, type } = useTheme();
+  const button = (icon: string, label: string, onPress: () => void, enabled: boolean) => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      disabled={!enabled}
+      hitSlop={6}
+      style={({ pressed }) => ({
+        width: 52,
+        height: 52,
+        borderRadius: radius.pill,
+        backgroundColor: c.chipBg,
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: !enabled ? 0.4 : pressed ? 0.7 : 1,
+      })}
+    >
+      <Icon name={icon} size={26} color={c.ink} />
+    </Pressable>
+  );
+  return (
+    <Row style={{ justifyContent: 'space-between' }}>
+      {button('minus', 'Less', onLess, canLess)}
+      <View style={{ alignItems: 'center', flex: 1 }} accessible accessibilityLabel={`${value} ${unit}`}>
+        <Text variant="number" style={{ fontSize: type.hero }}>
+          {value}
+        </Text>
+        <Text variant="small">{unit}</Text>
+      </View>
+      {button('plus', 'More', onMore, canMore)}
+    </Row>
+  );
+}
+
 /** A round profile photo, or the first letter of the name on a color when there's no photo. */
 export function Avatar({
   name,

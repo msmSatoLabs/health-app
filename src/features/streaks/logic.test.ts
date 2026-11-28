@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { computeStreak } from './logic';
+import { computeStreak, streakHint } from './logic';
 
 const TODAY = '2026-11-25'; // a Wednesday
 
@@ -60,5 +60,20 @@ describe('computeStreak', () => {
   it('counts achievement points toward the minimum (totals are passed in)', () => {
     // 6 activity points + 5 for "First step" = 11 that day.
     expect(computeStreak(pts(['2026-11-24', 6 + 5]), [], TODAY)).toBe(1);
+  });
+});
+
+describe('streakHint', () => {
+  it('says today already counts once the minimum is reached', () => {
+    expect(streakHint(10, 5, 10)).toEqual({ kind: 'counted' });
+    expect(streakHint(25, 0, 10)).toEqual({ kind: 'counted' });
+  });
+  it('says this entry keeps the streak when it crosses the minimum', () => {
+    expect(streakHint(4, 6, 10)).toEqual({ kind: 'keeps' });
+    expect(streakHint(0, 30, 10)).toEqual({ kind: 'keeps' });
+  });
+  it('says how many points are still needed otherwise', () => {
+    expect(streakHint(2, 3, 10)).toEqual({ kind: 'short', pointsNeeded: 5 });
+    expect(streakHint(0, 0, 10)).toEqual({ kind: 'short', pointsNeeded: 10 });
   });
 });
