@@ -4,17 +4,19 @@ import { Alert, Pressable, View } from 'react-native';
 import { BarChart } from '../../components/BarChart';
 import { Icon } from '../../components/Icon';
 import {
-  Avatar,
+  BadgeTile,
   Card,
   Divider,
   ErrorNote,
   IconBubble,
   ListRow,
   Loading,
+  ProfileHeader,
   Row,
   Screen,
   Section,
   Segmented,
+  StatTile,
   Text,
   useGridTileWidth,
 } from '../../components/ui';
@@ -106,20 +108,16 @@ export default function You() {
         </Pressable>
       </Row>
 
-      <Row style={{ gap: 16 }}>
-        <Avatar name={profile.display_name} url={profile.avatar_url} size={76} highlight />
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text variant="title" numberOfLines={1}>
-            {profile.display_name}
-          </Text>
-          <Text variant="small">{stats.lifetime_points.toLocaleString()} points all time</Text>
-        </View>
-      </Row>
+      <ProfileHeader
+        name={profile.display_name}
+        url={profile.avatar_url}
+        subtitle={`${stats.lifetime_points.toLocaleString()} points all time`}
+      />
 
       <Row style={{ gap: 10 }}>
-        <StatTile value={String(stats.streak)} label="Day streak" icon="flame" />
-        <StatTile value={String(seasons[0]?.points ?? 0)} label="This season" icon="trophy" />
-        <StatTile value={String(new Set(mine.map((m) => m.achievement_key)).size)} label="Badges" icon="star" />
+        <StatTile value={String(stats.streak)} label="Day streak" />
+        <StatTile value={(seasons[0]?.points ?? 0).toLocaleString()} label="This season" />
+        <StatTile value={String(new Set(mine.map((m) => m.achievement_key)).size)} label="Badges" />
       </Row>
 
       <Section title="History" />
@@ -173,7 +171,7 @@ export default function You() {
               <View key={t.activityKey} style={{ gap: 12 }}>
                 {i > 0 ? <Divider /> : null}
                 <ListRow
-                  left={<IconBubble name={type.icon} tone="accent" />}
+                  left={<IconBubble name={type.icon} tone="activity" />}
                   title={type.label}
                   subtitle={`${formatAvg(t.recent, type.unit)} a day${
                     t.direction === 'new' ? ' · new this week' : ` · was ${formatAvg(t.baseline, type.unit)}`
@@ -199,7 +197,7 @@ export default function You() {
               <View key={l.id} style={{ gap: 12 }}>
                 {i > 0 ? <Divider /> : null}
                 <ListRow
-                  left={<IconBubble name={t?.icon ?? 'star'} />}
+                  left={<IconBubble name={t?.icon ?? 'star'} tone="activity" />}
                   title={t?.label ?? l.activity_key}
                   subtitle={`${formatAmount(Number(l.amount), t?.unit ?? '')} · ${l.source === 'health' ? 'synced' : 'by hand'}`}
                   right={
@@ -217,19 +215,6 @@ export default function You() {
       ))}
       <ErrorNote message={actionError} />
     </Screen>
-  );
-}
-
-function StatTile({ value, label, icon }: { value: string; label: string; icon: string }) {
-  const { c } = useTheme();
-  return (
-    <Card style={{ flex: 1, gap: 4, padding: 14 }}>
-      <Icon name={icon} size={20} color={c.accent} />
-      <Text variant="number">{value}</Text>
-      <Text variant="caption" numberOfLines={1}>
-        {label}
-      </Text>
-    </Card>
   );
 }
 
@@ -281,56 +266,40 @@ function formatAvg(n: number, unit: string) {
 }
 
 function AchievementGrid({ achievements, mine }: { achievements: Achievement[]; mine: UserAchievement[] }) {
-  const { c, radius } = useTheme();
   const tile = useGridTileWidth(3, 10);
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, rowGap: 16 }}>
       {achievements.map((a) => {
         const earned = mine.filter((m) => m.achievement_key === a.key);
         const has = earned.length > 0;
         const pts = a.bonus_points ?? 0;
         const last = earned.at(-1);
-        const when = has
-          ? `${a.kind === 'daily' && earned.length > 1 ? `${earned.length}× · last ` : ''}${shortDate(last!.earned_at)}`
-          : 'Locked';
+        const detail = has
+          ? a.kind === 'daily' && earned.length > 1
+            ? `${earned.length}×`
+            : shortDate(last!.earned_at)
+          : `+${pts} pts`;
         return (
-          <Pressable
+          <BadgeTile
             key={a.key}
-            accessibilityRole="button"
-            accessibilityLabel={`${a.title}. ${has ? `Earned ${when}` : 'Not earned yet'}. ${pts} points.`}
+            icon={a.icon}
+            title={a.title}
+            detail={detail}
+            earned={has}
+            width={tile}
+            accessibilityLabel={`${a.title}. ${has ? `Earned ${shortDate(last!.earned_at)}` : 'Not earned yet'}. ${pts} points.`}
             onPress={() =>
               Alert.alert(
                 a.title,
-                `${a.description}${a.kind === 'daily' ? ' (can be earned every day)' : ''}\n\n+${pts} pts${
-                  has ? `\nEarned ${earned.length > 1 ? `${earned.length} times, most recently` : ''} ${shortDate(last!.earned_at)}` : ''
+                `${a.description}${a.kind === 'daily' ? ' (can be earned every day)' : ''}
+
++${pts} pts${
+                  has ? `
+Earned ${earned.length > 1 ? `${earned.length} times, most recently` : ''} ${shortDate(last!.earned_at)}` : ''
                 }`,
               )
             }
-            style={{
-              width: tile,
-              alignItems: 'center',
-              gap: 6,
-              paddingVertical: 16,
-              paddingHorizontal: 6,
-              borderRadius: radius.badge,
-              backgroundColor: has ? c.accentSoft : c.surface,
-              borderWidth: 1,
-              borderColor: has ? c.accentSoft : c.cardBorder,
-            }}
-          >
-            <View style={{ opacity: has ? 1 : 0.45 }}>
-              <Icon name={has ? a.icon : 'lock'} size={34} color={has ? c.accentInk : c.muted} />
-            </View>
-            <Text variant="body" numberOfLines={1} color={has ? c.accentInk : c.ink} style={{ textAlign: 'center' }}>
-              {a.title}
-            </Text>
-            <Text variant="caption" color={has ? c.accentInk : c.muted} numberOfLines={1}>
-              +{pts} pts
-            </Text>
-            <Text variant="caption" numberOfLines={1} style={{ textAlign: 'center' }}>
-              {when}
-            </Text>
-          </Pressable>
+          />
         );
       })}
     </View>

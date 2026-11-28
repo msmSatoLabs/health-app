@@ -105,8 +105,9 @@ export const font = {
 export const avatarColors = ['#E07A5F', '#3D9970', '#6C5CE7', '#F2A541', '#2D9CDB', '#D35D9B', '#5A6B7B'];
 
 /**
- * One color per kind of activity, used to tint its icon tile (Fresh mockups).
- * Keyed by the icon name stored in activity_types.icon. Tiles show the color
+ * One color per icon, used to tint activity tiles and achievement badges
+ * (Fresh mockups). Keyed by the icon name stored in activity_types.icon and
+ * achievements.icon. Tiles show the color
  * at low opacity behind a full-strength glyph, so they work in light and dark.
  */
 export const activityColors: Record<string, string> = {
@@ -118,6 +119,10 @@ export const activityColors: Record<string, string> = {
   bowl: '#F2A541',
   book: '#D35D9B',
   users: '#17A2A2',
+  star: '#D99A1E',
+  trophy: '#D99A1E',
+  target: '#2E9C73',
+  mountain: '#3D9970',
 };
 
 /** Hex color at a given opacity, e.g. withAlpha('#3D9970', 0.13) for a soft tile. */

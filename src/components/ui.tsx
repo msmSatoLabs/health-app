@@ -432,6 +432,114 @@ export function Avatar({
   );
 }
 
+/** Centered profile photo with an accent ring, the name and a line under it. */
+export function ProfileHeader({
+  name,
+  url,
+  subtitle,
+  size = 88,
+}: {
+  name: string;
+  url?: string | null;
+  subtitle?: string;
+  size?: number;
+}) {
+  const { c } = useTheme();
+  return (
+    <View style={{ alignItems: 'center', gap: 6 }}>
+      <View style={{ borderRadius: 999, padding: 3, borderWidth: 2, borderColor: c.accent, marginBottom: 4 }}>
+        <Avatar name={name} url={url} size={size} highlight />
+      </View>
+      <Text variant="title" numberOfLines={1} style={{ textAlign: 'center' }}>
+        {name}
+      </Text>
+      {subtitle ? (
+        <Text variant="small" style={{ textAlign: 'center' }}>
+          {subtitle}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/** A small card with a big centered number and a label. Use three in a Row. */
+export function StatTile({ value, label }: { value: string; label: string }) {
+  return (
+    <Card style={{ flex: 1, gap: 2, paddingVertical: 14, paddingHorizontal: 8, alignItems: 'center' }}>
+      <Text variant="number" numberOfLines={1} style={{ fontSize: 24 }}>
+        {value}
+      </Text>
+      <Text variant="caption" numberOfLines={1}>
+        {label}
+      </Text>
+    </Card>
+  );
+}
+
+/**
+ * An achievement badge: a tinted square with its icon (or a lock when not
+ * earned), the title and one detail line.
+ */
+export function BadgeTile({
+  icon,
+  title,
+  detail,
+  earned,
+  width,
+  onPress,
+  accessibilityLabel,
+}: {
+  icon: string;
+  title: string;
+  detail?: string;
+  earned: boolean;
+  width: number;
+  onPress?: () => void;
+  accessibilityLabel?: string;
+}) {
+  const { c, radius, isDark } = useTheme();
+  const tint = activityColors[icon] ?? c.accent;
+  const body = (
+    <View style={{ width, alignItems: 'center', gap: 6 }}>
+      <View
+        style={{
+          width: '100%',
+          aspectRatio: 1,
+          borderRadius: radius.badge,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: earned ? withAlpha(tint, isDark ? 0.22 : 0.14) : c.chipBg,
+          opacity: earned ? 1 : 0.6,
+        }}
+      >
+        <Icon name={earned ? icon : 'lock'} size={Math.round(width * 0.34)} color={earned ? tint : c.muted} />
+      </View>
+      <Text variant="small" color={earned ? c.ink : c.muted} numberOfLines={1} style={{ textAlign: 'center' }}>
+        {title}
+      </Text>
+      {detail ? (
+        <Text variant="caption" numberOfLines={1} style={{ textAlign: 'center', marginTop: -4 }}>
+          {detail}
+        </Text>
+      ) : null}
+    </View>
+  );
+  return onPress ? (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+    >
+      {body}
+    </Pressable>
+  ) : (
+    <View accessible accessibilityLabel={accessibilityLabel ?? title}>
+      {body}
+    </View>
+  );
+}
+
 /** Overlapping avatars, e.g. the top members of a community. */
 export function AvatarStack({
   people,

@@ -1,7 +1,22 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { Icon } from '../../components/Icon';
-import { Avatar, Card, Divider, ErrorNote, IconBubble, ListRow, Loading, Row, Screen, Section, Text } from '../../components/ui';
+import {
+  BadgeTile,
+  Card,
+  Divider,
+  ErrorNote,
+  IconBubble,
+  ListRow,
+  Loading,
+  ProfileHeader,
+  Row,
+  Screen,
+  Section,
+  StatTile,
+  Text,
+  useGridTileWidth,
+} from '../../components/ui';
 import { getActivityTypes, getMemberProfile } from '../../lib/api';
 import { formatAmount } from '../../lib/activityUi';
 import { useUserId } from '../../lib/auth';
@@ -12,6 +27,7 @@ import { useTheme } from '../../theme/theme';
 /** A community mate's profile. Hidden items (their privacy settings) come back empty from the database. */
 export default function MemberScreen() {
   const { c } = useTheme();
+  const tile = useGridTileWidth(3, 10);
   const userId = useUserId();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, error, refresh, refreshing } = useLoad(async () => {
@@ -34,17 +50,12 @@ export default function MemberScreen() {
   return (
     <Screen onRefresh={refresh} refreshing={refreshing} topInset={false}>
       <Stack.Screen options={{ title: '' }} />
-      <View style={{ alignItems: 'center', gap: 8 }}>
-        <Avatar name={member.display_name} url={member.avatar_url} size={96} />
-        <Text variant="title" style={{ textAlign: 'center' }}>
-          {isMe ? `${member.display_name} (you)` : member.display_name}
-        </Text>
-      </View>
+      <ProfileHeader name={isMe ? `${member.display_name} (you)` : member.display_name} url={member.avatar_url} />
 
       <Row style={{ gap: 10 }}>
-        <Stat value={member.week_points.toLocaleString()} label="Last 7 days" />
-        <Stat value={member.season_points.toLocaleString()} label="This season" />
-        <Stat value={member.streak === null ? '–' : String(member.streak)} label="Day streak" />
+        <StatTile value={member.week_points.toLocaleString()} label="Last 7 days" />
+        <StatTile value={member.season_points.toLocaleString()} label="This season" />
+        <StatTile value={member.streak === null ? '–' : String(member.streak)} label="Day streak" />
       </Row>
 
       <Section title="This week" />
@@ -60,7 +71,7 @@ export default function MemberScreen() {
               <View key={a.activity_key} style={{ gap: 12 }}>
                 {i > 0 ? <Divider /> : null}
                 <ListRow
-                  left={<IconBubble name={t?.icon ?? 'star'} tone="accent" />}
+                  left={<IconBubble name={t?.icon ?? 'star'} tone="activity" />}
                   title={t?.label ?? a.activity_key}
                   subtitle={formatAmount(Number(a.amount), t?.unit ?? '')}
                   right={
@@ -88,33 +99,22 @@ export default function MemberScreen() {
           No achievements yet.
         </Text>
       ) : (
-        <Card style={{ gap: 12 }}>
-          {member.achievements.map((a, i) => (
-            <View key={a.key} style={{ gap: 12 }}>
-              {i > 0 ? <Divider /> : null}
-              <ListRow
-                left={<IconBubble name={a.icon} tone="accent" />}
-                title={a.title}
-                subtitle={`${a.times > 1 ? `${a.times}× · last ` : ''}${shortDate(a.last_earned)}`}
-              />
-            </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, rowGap: 16 }}>
+          {member.achievements.map((a) => (
+            <BadgeTile
+              key={a.key}
+              icon={a.icon}
+              title={a.title}
+              detail={a.times > 1 ? `${a.times}×` : shortDate(a.last_earned)}
+              earned
+              width={tile}
+            />
           ))}
-        </Card>
+        </View>
       )}
       {member.streak === null ? (
         <Text variant="caption">{isMe ? 'Your streak is hidden from friends.' : 'Streak is private.'}</Text>
       ) : null}
     </Screen>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <Card style={{ flex: 1, gap: 2, padding: 14, alignItems: 'center' }}>
-      <Text variant="number">{value}</Text>
-      <Text variant="caption" numberOfLines={1}>
-        {label}
-      </Text>
-    </Card>
   );
 }
