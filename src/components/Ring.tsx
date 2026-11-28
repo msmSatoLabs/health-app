@@ -42,7 +42,7 @@ export function Ring({
         />
       </Svg>
       <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
-        <Text variant="number" style={{ fontSize: size > 160 ? type.hero : type.number }}>
+        <Text variant="number" style={{ fontSize: size >= 200 ? type.hero : size >= 140 ? type.largeTitle : type.number }}>
           {value}
         </Text>
         <Text variant="small">{caption ?? `of ${max} pts`}</Text>

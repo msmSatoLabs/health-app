@@ -26,6 +26,9 @@ const light = {
   // The one dark element (quests / highlights) so it stands out.
   featureBg: '#16201B',
   featureInk: '#F3F6F4',
+  featureTrack: 'rgba(255,255,255,0.15)',
+  featureFill: '#7AD9AE',
+  good: '#2E9C73',
   gold: '#E9B949',
   danger: '#C2473A',
   onAvatar: '#FFFFFF',
@@ -51,6 +54,9 @@ const dark: Palette = {
   track: '#232D27',
   featureBg: '#DCF0E6',
   featureInk: '#10251B',
+  featureTrack: 'rgba(16,37,27,0.15)',
+  featureFill: '#2E9C73',
+  good: '#4CC596',
   gold: '#E9B949',
   danger: '#E5776A',
   onAvatar: '#FFFFFF',
@@ -97,6 +103,30 @@ export const font = {
 
 /** Colors used for member avatars. */
 export const avatarColors = ['#E07A5F', '#3D9970', '#6C5CE7', '#F2A541', '#2D9CDB', '#D35D9B', '#5A6B7B'];
+
+/**
+ * One color per kind of activity, used to tint its icon tile (Fresh mockups).
+ * Keyed by the icon name stored in activity_types.icon. Tiles show the color
+ * at low opacity behind a full-strength glyph, so they work in light and dark.
+ */
+export const activityColors: Record<string, string> = {
+  walk: '#3D9970',
+  gym: '#6C5CE7',
+  moon: '#6F86A6',
+  flame: '#E07A5F',
+  drop: '#2D9CDB',
+  bowl: '#F2A541',
+  book: '#D35D9B',
+  users: '#17A2A2',
+};
+
+/** Hex color at a given opacity, e.g. withAlpha('#3D9970', 0.13) for a soft tile. */
+export function withAlpha(hex: string, alpha: number) {
+  const a = Math.round(Math.max(0, Math.min(1, alpha)) * 255)
+    .toString(16)
+    .padStart(2, '0');
+  return `${hex.slice(0, 7)}${a}`;
+}
 
 export const palettes = { light, dark };
 

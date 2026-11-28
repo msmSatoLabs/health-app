@@ -20,7 +20,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { avatarColors, useTheme } from '../theme/theme';
+import { activityColors, avatarColors, useTheme, withAlpha } from '../theme/theme';
 import { Icon } from './Icon';
 
 type TextVariant = 'largeTitle' | 'title' | 'section' | 'heading' | 'body' | 'label' | 'small' | 'caption' | 'number';
@@ -198,13 +198,103 @@ export function Chip({ label, tone = 'accent', icon }: { label: string; tone?: '
   );
 }
 
-export function IconBubble({ name, tone = 'neutral', size = 44 }: { name: string; tone?: 'neutral' | 'accent' | 'warm'; size?: number }) {
-  const { c, radius } = useTheme();
-  const bg = tone === 'accent' ? c.accentSoft : tone === 'warm' ? c.warmSoft : c.chipBg;
-  const fg = tone === 'accent' ? c.accentInk : tone === 'warm' ? c.warmInk : c.ink;
+/**
+ * A rounded square with an icon. `tone` picks a theme color; `tint` uses an
+ * activity's own color (see activityColors) on a soft background.
+ */
+export function IconBubble({
+  name,
+  tone = 'neutral',
+  tint,
+  size = 44,
+}: {
+  name: string;
+  tone?: 'neutral' | 'accent' | 'warm' | 'activity';
+  /** Overrides tone. Defaults to the activity color for `name` when tone is 'activity'. */
+  tint?: string;
+  size?: number;
+}) {
+  const { c, radius, isDark } = useTheme();
+  const color = tint ?? (tone === 'activity' ? activityColors[name] : undefined);
+  const bg = color
+    ? withAlpha(color, isDark ? 0.22 : 0.14)
+    : tone === 'accent'
+      ? c.accentSoft
+      : tone === 'warm'
+        ? c.warmSoft
+        : c.chipBg;
+  const fg = color ?? (tone === 'accent' ? c.accentInk : tone === 'warm' ? c.warmInk : c.ink);
   return (
     <View style={{ width: size, height: size, borderRadius: radius.icon, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name={name} size={size * 0.53} color={fg} />
+    </View>
+  );
+}
+
+/** A small icon + number + label, used beside the ring on Home. */
+export function MiniStat({
+  icon,
+  tone = 'accent',
+  value,
+  label,
+}: {
+  icon: string;
+  tone?: 'accent' | 'warm';
+  value: string;
+  label: string;
+}) {
+  return (
+    <Row style={{ gap: 10 }}>
+      <IconBubble name={icon} tone={tone} size={38} />
+      <View style={{ flexShrink: 1 }}>
+        <Text variant="heading" numberOfLines={1} style={{ fontVariant: ['tabular-nums'] }}>
+          {value}
+        </Text>
+        <Text variant="caption" numberOfLines={1}>
+          {label}
+        </Text>
+      </View>
+    </Row>
+  );
+}
+
+/**
+ * The one dark card on a screen (light in dark mode), so it stands out.
+ * Optional progress bar underneath.
+ */
+export function FeatureCard({
+  label,
+  title,
+  body,
+  progress,
+}: {
+  label?: string;
+  title: string;
+  body?: string;
+  progress?: { value: number; max: number };
+}) {
+  const { c, radius } = useTheme();
+  const pct = progress && progress.max > 0 ? Math.min(1, progress.value / progress.max) : 0;
+  return (
+    <View style={{ backgroundColor: c.featureBg, borderRadius: radius.card, padding: 18, gap: 8 }}>
+      {label ? (
+        <Text variant="label" color={c.featureInk} style={{ opacity: 0.75 }}>
+          {label}
+        </Text>
+      ) : null}
+      <Text variant="heading" color={c.featureInk}>
+        {title}
+      </Text>
+      {progress ? (
+        <View style={{ height: 8, borderRadius: 99, backgroundColor: c.featureTrack, overflow: 'hidden' }}>
+          <View style={{ width: `${pct * 100}%`, height: '100%', borderRadius: 99, backgroundColor: c.featureFill }} />
+        </View>
+      ) : null}
+      {body ? (
+        <Text variant="small" color={c.featureInk} style={{ opacity: 0.8 }}>
+          {body}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -234,6 +324,26 @@ export function Avatar({
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
       <RNText style={{ color: fg, fontFamily: font.bold, fontSize: size * 0.4 }}>{(name[0] ?? '?').toUpperCase()}</RNText>
     </View>
+  );
+}
+
+/** Overlapping avatars, e.g. the top members of a community. */
+export function AvatarStack({
+  people,
+  size = 30,
+}: {
+  people: { id: string; name: string; url?: string | null }[];
+  size?: number;
+}) {
+  const { c } = useTheme();
+  return (
+    <Row style={{ gap: 0 }}>
+      {people.map((p, i) => (
+        <View key={p.id} style={{ marginLeft: i ? -size / 3 : 0, borderWidth: 2, borderColor: c.surface, borderRadius: 99 }}>
+          <Avatar name={p.name} url={p.url} size={size} />
+        </View>
+      ))}
+    </Row>
   );
 }
 

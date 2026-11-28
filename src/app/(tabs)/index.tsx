@@ -2,7 +2,25 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Ring } from '../../components/Ring';
-import { Avatar, Button, Card, Chip, Divider, ErrorNote, IconBubble, ListRow, Loading, ProgressBar, Row, Screen, Section, Text } from '../../components/ui';
+import {
+  Avatar,
+  AvatarStack,
+  Button,
+  Card,
+  Chip,
+  Divider,
+  ErrorNote,
+  FeatureCard,
+  IconBubble,
+  ListRow,
+  Loading,
+  MiniStat,
+  ProgressBar,
+  Row,
+  Screen,
+  Section,
+  Text,
+} from '../../components/ui';
 import { syncToday } from '../../health';
 import {
   evaluateAchievements,
@@ -76,52 +94,61 @@ export default function Home() {
   const dateLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   const left = Math.max(0, stats.daily_goal - stats.today_points);
 
+  const firstName = profile.display_name.trim().split(/\s+/)[0] || 'there';
+  const goalMet = stats.today_points >= stats.daily_goal;
+
   return (
     <Screen onRefresh={refresh} refreshing={refreshing}>
       <Row style={{ justifyContent: 'space-between' }}>
         <View style={{ flex: 1 }}>
-          <Text variant="label">{dateLabel}</Text>
-          <Text variant="largeTitle">Summary</Text>
+          <Text variant="small">{dateLabel}</Text>
+          <Text variant="title" numberOfLines={1}>
+            Hey, {firstName}
+          </Text>
         </View>
         <Pressable onPress={() => router.push('/you')} accessibilityRole="button" accessibilityLabel="Your profile">
           <Avatar name={profile.display_name} url={profile.avatar_url} size={44} highlight />
         </Pressable>
       </Row>
 
-      <Card style={{ alignItems: 'center', gap: 16, paddingVertical: 24 }}>
-        <Text variant="heading">Daily points</Text>
-        <Ring value={stats.today_points} max={stats.daily_goal} />
-        <Text variant="body" color={c.muted}>
-          {left > 0 ? `${left} more ${left === 1 ? 'point' : 'points'} to hit your goal` : 'Goal reached. Nice work.'}
-        </Text>
-      </Card>
-
-      <Row style={{ gap: 10 }}>
-        <Card style={{ flex: 1, gap: 6 }}>
-          <IconBubble name="flame" tone="warm" size={36} />
-          <Text variant="number">{stats.streak}</Text>
-          <Text variant="small">{stats.rest_day_today ? 'Day streak · rest day' : 'Day streak'}</Text>
-        </Card>
-        <Card style={{ flex: 1, gap: 6 }}>
-          <IconBubble name="bolt" tone="accent" size={36} />
-          <Text variant="number">{stats.week_points}</Text>
-          <Text variant="small">Last 7 days</Text>
-        </Card>
+      <Row style={{ gap: 20 }}>
+        <Ring value={stats.today_points} max={stats.daily_goal} size={156} stroke={16} />
+        <View style={{ flex: 1, gap: 14 }}>
+          <MiniStat
+            icon="flame"
+            tone="warm"
+            value={`${stats.streak} ${stats.streak === 1 ? 'day' : 'days'}`}
+            label={stats.rest_day_today ? 'Streak · rest day' : 'Streak'}
+          />
+          <MiniStat
+            icon="target"
+            value={goalMet ? 'Goal hit' : `${left} to go`}
+            label={goalMet ? 'Nice work today' : 'To your daily goal'}
+          />
+          <MiniStat icon="bolt" value={stats.week_points.toLocaleString()} label="Last 7 days" />
+        </View>
       </Row>
 
       {community ? (
-        <Pressable onPress={() => router.push(`/community/${community.id}`)} accessibilityRole="button">
-          <Card style={{ gap: 12 }}>
+        <Pressable
+          onPress={() => router.push(`/community/${community.id}`)}
+          accessibilityRole="button"
+          style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+        >
+          <Card style={{ gap: 10 }}>
             <Row style={{ justifyContent: 'space-between' }}>
-              <Text variant="label">{community.name} · this week</Text>
+              <Text variant="label">This week</Text>
               <Chip label="Live" icon="live" />
             </Row>
             <Row style={{ gap: 14 }}>
               <Text variant="number" color={c.accent} style={{ fontSize: type.hero }}>
                 #{me?.rank ?? '–'}
               </Text>
-              <View style={{ flex: 1 }}>
-                <Text variant="body">
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text variant="heading" numberOfLines={1}>
+                  {community.name}
+                </Text>
+                <Text variant="small" numberOfLines={1}>
                   {ahead && me
                     ? `${ahead.points - me.points} pts behind ${ahead.display_name}`
                     : board.length > 1
@@ -129,29 +156,17 @@ export default function Home() {
                       : 'Invite friends to compete'}
                 </Text>
               </View>
-              <Row style={{ gap: 0 }}>
-                {board.slice(0, 3).map((r, i) => (
-                  <View key={r.user_id} style={{ marginLeft: i ? -10 : 0, borderWidth: 2, borderColor: c.surface, borderRadius: 99 }}>
-                    <Avatar name={r.display_name} url={r.avatar_url} size={32} />
-                  </View>
-                ))}
-              </Row>
+              <AvatarStack people={board.slice(0, 3).map((r) => ({ id: r.user_id, name: r.display_name, url: r.avatar_url }))} />
             </Row>
           </Card>
         </Pressable>
       ) : (
-        <Pressable onPress={() => router.push('/ranks')} accessibilityRole="button">
-          <Card style={{ backgroundColor: c.featureBg, borderColor: c.featureBg, gap: 6 }}>
-            <Text variant="label" color={c.featureInk} style={{ opacity: 0.75 }}>
-              Better with friends
-            </Text>
-            <Text variant="heading" color={c.featureInk}>
-              Start or join a community
-            </Text>
-            <Text variant="small" color={c.featureInk} style={{ opacity: 0.8 }}>
-              Compete on a private leaderboard with your friends.
-            </Text>
-          </Card>
+        <Pressable onPress={() => router.push('/ranks')} accessibilityRole="button" style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}>
+          <FeatureCard
+            label="Better with friends"
+            title="Start or join a community"
+            body="Compete on a private leaderboard with your friends."
+          />
         </Pressable>
       )}
 
@@ -175,7 +190,7 @@ export default function Home() {
                 <View key={t.key} style={{ gap: 14 }}>
                   {i > 0 ? <Divider /> : null}
                   <ListRow
-                    left={<IconBubble name={t.icon} tone="accent" />}
+                    left={<IconBubble name={t.icon} tone="activity" />}
                     title={t.label}
                     subtitle={formatAmount(Number(b.amount), t.unit)}
                     right={
