@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable } from 'react-native';
-import { Button, Card, ErrorNote, Input, Screen, Text } from '../components/ui';
+import { KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
+import { Button, Card, ErrorNote, IconBubble, Input, Notice, Row, Screen, Text } from '../components/ui';
 import {
   cleanCode,
   isCodeComplete,
@@ -92,7 +92,13 @@ export default function ResetPassword() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen>
-        <Text variant="largeTitle">Reset password</Text>
+        <Row style={{ gap: 14 }}>
+          <IconBubble name="key" tone="accent" size={48} />
+          <View style={{ flex: 1 }}>
+            <Text variant="small">{step === 'email' ? 'Step 1 of 2' : step === 'code' ? 'Step 2 of 2' : 'Done'}</Text>
+            <Text variant="title">Reset password</Text>
+          </View>
+        </Row>
 
         {step === 'email' ? (
           <Card style={{ gap: 12 }}>
@@ -127,9 +133,7 @@ export default function ResetPassword() {
                 maxLength={10}
               />
             ) : (
-              <Text variant="small" color={c.accentInk}>
-                Code accepted. Now save your new password.
-              </Text>
+              <Notice tone="accent" title="Code accepted" body="Now save your new password." />
             )}
             <Input
               placeholder="New password"
@@ -182,11 +186,10 @@ export default function ResetPassword() {
         ) : null}
 
         {step === 'done' ? (
-          <Card style={{ gap: 12 }}>
-            <Text variant="heading">Password updated</Text>
-            <Text variant="body">You’re signed in. Use the new password next time you sign in.</Text>
+          <View style={{ gap: 16 }}>
+            <Notice tone="accent" title="Password updated" body="You’re signed in. Use the new password next time you sign in." />
             <Button title="Continue" onPress={() => router.replace('/')} />
-          </Card>
+          </View>
         ) : null}
       </Screen>
     </KeyboardAvoidingView>

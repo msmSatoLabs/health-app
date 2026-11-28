@@ -655,12 +655,14 @@ export function ListRow({
 /** A settings row with an on/off switch. */
 export function SwitchRow({
   icon,
+  tone = 'neutral',
   title,
   subtitle,
   value,
   onChange,
 }: {
   icon?: string;
+  tone?: 'neutral' | 'accent' | 'warm' | 'activity';
   title: string;
   subtitle?: string;
   value: boolean;
@@ -669,11 +671,66 @@ export function SwitchRow({
   const { c } = useTheme();
   return (
     <ListRow
-      left={icon ? <IconBubble name={icon} size={36} /> : undefined}
+      left={icon ? <IconBubble name={icon} tone={tone} size={36} /> : undefined}
       title={title}
       subtitle={subtitle}
       right={<Switch value={value} onValueChange={onChange} trackColor={{ true: c.accent, false: c.track }} accessibilityLabel={title} />}
     />
+  );
+}
+
+/**
+ * iOS-style settings group: a small label, a card holding rows (a divider is
+ * drawn between each child), and an optional footnote underneath.
+ */
+export function Group({ label, footnote, children }: { label?: string; footnote?: string; children: ReactNode }) {
+  const { c } = useTheme();
+  const rows = (Array.isArray(children) ? children.flat() : [children]).filter(
+    (child) => child !== null && child !== undefined && child !== false,
+  );
+  return (
+    <View style={{ gap: 8 }}>
+      {label ? (
+        <Text variant="label" style={{ paddingHorizontal: 4 }}>
+          {label}
+        </Text>
+      ) : null}
+      <Card style={{ gap: 12, paddingVertical: 14 }}>
+        {rows.map((child, i) => (
+          <View key={i} style={{ gap: 12 }}>
+            {i > 0 ? <View style={{ height: 1, backgroundColor: c.line }} /> : null}
+            {child}
+          </View>
+        ))}
+      </Card>
+      {footnote ? (
+        <Text variant="caption" style={{ paddingHorizontal: 4 }}>
+          {footnote}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/** A soft colored note: 'warm' for something to fix, 'accent' for good news. */
+export function Notice({ title, body, tone = 'warm' }: { title: string; body?: string; tone?: 'warm' | 'accent' }) {
+  const { c, radius } = useTheme();
+  const bg = tone === 'warm' ? c.warmSoft : c.accentSoft;
+  const fg = tone === 'warm' ? c.warmInk : c.accentInk;
+  return (
+    <View style={{ backgroundColor: bg, borderRadius: radius.card, padding: 16, gap: 4 }}>
+      <Row style={{ gap: 8 }}>
+        <Icon name={tone === 'warm' ? 'alert' : 'check'} size={20} color={fg} />
+        <Text variant="heading" color={fg} style={{ flex: 1 }}>
+          {title}
+        </Text>
+      </Row>
+      {body ? (
+        <Text variant="small" color={fg}>
+          {body}
+        </Text>
+      ) : null}
+    </View>
   );
 }
 

@@ -1,7 +1,7 @@
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
-import { Button, Card, ErrorNote, Input, Screen, Segmented, Text } from '../components/ui';
+import { Button, Card, ErrorNote, IconBubble, Input, Notice, Screen, Segmented, Text } from '../components/ui';
 import { friendlyError } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
@@ -53,24 +53,21 @@ export default function SignIn() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Screen>
-        <View style={{ marginTop: 48, marginBottom: 12, gap: 6 }}>
-          <Text variant="title" style={{ fontSize: 34 }}>
+        <View style={{ marginTop: 48, marginBottom: 12, gap: 10, alignItems: 'center' }}>
+          <IconBubble name="heart" tone="accent" size={72} />
+          <Text variant="largeTitle" style={{ textAlign: 'center' }}>
             {APP_NAME}
           </Text>
-          <Text variant="body" color={c.muted}>
+          <Text variant="body" color={c.muted} style={{ textAlign: 'center' }}>
             A group chat that keeps your friends healthy.
           </Text>
         </View>
 
         {!isSupabaseConfigured ? (
-          <Card style={{ gap: 6, backgroundColor: c.warmSoft, borderColor: c.warmSoft }}>
-            <Text variant="heading" color={c.warmInk}>
-              Supabase isn’t connected yet
-            </Text>
-            <Text variant="small" color={c.warmInk}>
-              Add your project URL and publishable key to a .env file, then restart Expo. SETUP.md walks through it.
-            </Text>
-          </Card>
+          <Notice
+            title="Supabase isn’t connected yet"
+            body="Add your project URL and publishable key to a .env file, then restart Expo. SETUP.md walks through it."
+          />
         ) : null}
 
         <Card style={{ gap: 12 }}>
@@ -105,11 +102,7 @@ export default function SignIn() {
             </Pressable>
           ) : null}
           <ErrorNote message={error} />
-          {notice ? (
-            <Text variant="small" color={c.accentInk}>
-              {notice}
-            </Text>
-          ) : null}
+          {notice ? <Notice tone="accent" title={notice} /> : null}
           <Button title={mode === 'in' ? 'Sign in' : 'Create account'} onPress={submit} loading={busy} />
         </Card>
       </Screen>

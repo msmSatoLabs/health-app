@@ -30,7 +30,14 @@ export function DeleteAccount({ userId }: { userId: string }) {
   }
 
   if (!open) {
-    return <Button title="Delete account" kind="danger" onPress={() => setOpen(true)} />;
+    return (
+      <View style={{ gap: 6, marginTop: 8 }}>
+        <Button title="Delete account" kind="danger" icon="trash" onPress={() => setOpen(true)} />
+        <Text variant="caption" style={{ textAlign: 'center' }}>
+          Removes your account and everything in it.
+        </Text>
+      </View>
+    );
   }
 
   return (

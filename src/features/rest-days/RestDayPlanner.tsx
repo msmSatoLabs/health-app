@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
-import { Card, Divider, ErrorNote, Loading, Row, Text } from '../../components/ui';
+import { Card, Divider, ErrorNote, IconBubble, Loading, Row, Text } from '../../components/ui';
 import { cancelRestDay, friendlyError, getMyRestDays, getMyStats, planRestDay } from '../../lib/api';
 import { addDays, localDay, prettyDay, shortWeekday } from '../../lib/dates';
 import { useLoad } from '../../lib/useLoad';
@@ -10,10 +10,7 @@ import { canPlanRestDay, isBeforeDeadline, nextPlannableWeek, restDayReasonText,
 /** How many upcoming weeks to show (next week and the one after). */
 const WEEKS_SHOWN = 2;
 
-/**
- * Plan rest days for upcoming weeks. Functional for now; styling comes in
- * the design pass. The database re-checks every rule.
- */
+/** Plan rest days for upcoming weeks. The database re-checks every rule. */
 export function RestDayPlanner() {
   const { c } = useTheme();
   const { data, error, reload } = useLoad(async () => {
@@ -84,11 +81,14 @@ export function RestDayPlanner() {
           : `${perWeek} rest days per week (Monday to Sunday) keep your streak alive. Plan them before the week starts, by Sunday night.`}
       </Text>
       <Card style={{ gap: 14 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <Text variant="label">This week</Text>
-          <Text variant="small">
-            {thisWeek.length ? thisWeek.map((d) => prettyDay(d, today)).join(', ') : 'No rest day planned'}
-          </Text>
+        <Row>
+          <IconBubble name="moon" tone="activity" size={36} />
+          <View style={{ flex: 1 }}>
+            <Text variant="label">This week</Text>
+            <Text variant="body" numberOfLines={1}>
+              {thisWeek.length ? thisWeek.map((d) => prettyDay(d, today)).join(', ') : 'No rest day planned'}
+            </Text>
+          </View>
         </Row>
         {weeks.map((days, i) => {
           const full = days.filter((d) => planned.includes(d)).length >= perWeek;
@@ -151,9 +151,11 @@ function DayPill({
         alignItems: 'center',
         gap: 2,
         paddingVertical: 10,
+        minHeight: 52,
+        justifyContent: 'center',
         borderRadius: radius.pill,
         backgroundColor: on ? c.accent : c.chipBg,
-        opacity: busy ? 0.5 : 1,
+        opacity: busy ? 0.5 : dimmed ? 0.6 : 1,
       }}
     >
       <Text variant="caption" color={fg}>

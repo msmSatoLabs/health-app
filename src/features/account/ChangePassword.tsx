@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable } from 'react-native';
-import { Button, Card, ErrorNote, Input, Text } from '../../components/ui';
+import { Button, Card, ErrorNote, IconBubble, Input, ListRow, Text } from '../../components/ui';
 import { changePassword, friendlyError } from '../../lib/api';
 import { useTheme } from '../../theme/theme';
 import { newPasswordProblem } from './logic';
@@ -63,15 +63,11 @@ export function ChangePassword({ email }: { email: string }) {
 
   if (!open) {
     return (
-      <Card style={{ gap: 12 }}>
-        {saved ? (
-          <Text variant="small" color={c.accentInk}>
-            Password changed.
-          </Text>
-        ) : null}
-        <Button
+      <Card style={{ gap: 12, paddingVertical: 14 }}>
+        <ListRow
+          left={<IconBubble name="key" size={36} />}
           title="Change password"
-          kind="secondary"
+          subtitle={saved ? 'Password changed.' : undefined}
           onPress={() => {
             setSaved(false);
             setOpen(true);
@@ -84,6 +80,7 @@ export function ChangePassword({ email }: { email: string }) {
 
   return (
     <Card style={{ gap: 12 }}>
+      <Text variant="heading">Change password</Text>
       <Input
         placeholder="Current password"
         value={current}

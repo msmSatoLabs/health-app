@@ -6,10 +6,12 @@ import {
   Card,
   Divider,
   ErrorNote,
+  Group,
   IconBubble,
   Input,
   ListRow,
   Loading,
+  Notice,
   Row,
   Screen,
   Section,
@@ -136,14 +138,18 @@ export default function Settings() {
   return (
     <Screen onRefresh={refresh} refreshing={refreshing}>
       <Text variant="largeTitle">Settings</Text>
-      {needsDbUpdate ? <DbUpdateNote /> : null}
+      {needsDbUpdate ? (
+        <Notice
+          title="Database update needed"
+          body="Photos and privacy settings need the newest database scripts. On your computer, run npm run db:push in the project folder, then pull down here to refresh."
+        />
+      ) : null}
 
-      <Section title="Profile" />
       <Card style={{ gap: 16 }}>
         <Row style={{ gap: 16 }}>
           <Pressable onPress={photoMenu} accessibilityRole="button" accessibilityLabel="Change profile photo">
-            <View>
-              <Avatar name={profile.display_name} url={profile.avatar_url} size={84} highlight />
+            <View style={{ borderRadius: 999, padding: 3, borderWidth: 2, borderColor: c.accent }}>
+              <Avatar name={profile.display_name} url={profile.avatar_url} size={76} highlight />
               {photoBusy ? (
                 <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
                   <ActivityIndicator color={c.accent} />
@@ -152,7 +158,12 @@ export default function Settings() {
             </View>
           </Pressable>
           <View style={{ flex: 1, gap: 6 }}>
-            <Text variant="heading">{profile.display_name}</Text>
+            <Text variant="heading" numberOfLines={1}>
+              {profile.display_name}
+            </Text>
+            <Text variant="small" numberOfLines={1}>
+              {session?.user.email ?? ''}
+            </Text>
             <Pressable onPress={photoMenu} hitSlop={8} accessibilityRole="button">
               <Text variant="body" color={c.accent}>
                 {profile.avatar_url ? 'Change photo' : 'Add a photo'}
@@ -173,110 +184,81 @@ export default function Settings() {
         People in your communities always see your points on the leaderboard. Choose what else they can see when they
         tap your name.
       </Text>
-      <Card style={{ gap: 10 }}>
+      <Group>
         <SwitchRow
           icon="flame"
+          tone="warm"
           title="Streak"
           value={profile.share_streak ?? true}
           onChange={(v) => save({ share_streak: v })}
         />
-        <Divider />
         <SwitchRow
           icon="trophy"
+          tone="activity"
           title="Achievements"
           value={profile.share_achievements ?? true}
           onChange={(v) => save({ share_achievements: v })}
         />
-      </Card>
-      <Text variant="label" style={{ marginTop: 4 }}>
-        Activities friends can see
-      </Text>
-      <Card style={{ gap: 10 }}>
-        {types.map((t, i) => (
-          <View key={t.key} style={{ gap: 10 }}>
-            {i > 0 ? <Divider /> : null}
-            <SwitchRow
-              icon={t.icon}
-              title={t.label}
-              value={!hiddenActivities.includes(t.key)}
-              onChange={(v) => toggleActivity(t.key, v)}
-            />
-          </View>
+      </Group>
+      <Group
+        label="Activities friends can see"
+        footnote="Hidden activities still count toward your points, but friends won’t see them on your profile or in the community feed."
+      >
+        {types.map((t) => (
+          <SwitchRow
+            key={t.key}
+            icon={t.icon}
+            tone="activity"
+            title={t.label}
+            value={!hiddenActivities.includes(t.key)}
+            onChange={(v) => toggleActivity(t.key, v)}
+          />
         ))}
-      </Card>
-      <Text variant="caption">
-        Hidden activities still count toward your points, but friends won’t see them on your profile or in the
-        community feed.
-      </Text>
+      </Group>
 
       <Section title="Rest days" />
       <RestDayPlanner />
 
-      <Section title="Health data" />
-      <Card style={{ gap: 10 }}>
+      <Section title="App" />
+      <Group label="Appearance" footnote="System matches your iPhone’s light or dark setting.">
+        <Segmented
+          options={[
+            { value: 'system', label: 'System' },
+            { value: 'light', label: 'Light' },
+            { value: 'dark', label: 'Dark' },
+          ]}
+          value={themePreference}
+          onChange={setThemePreference}
+        />
+      </Group>
+      <Group label="Health data">
         <ListRow
           left={<IconBubble name="heart" tone="warm" size={36} />}
           title="Apple Health"
           subtitle="Needs the full app build. Not available in Expo Go yet."
         />
         {__DEV__ ? (
-          <>
-            <Divider />
-            <SwitchRow
-              icon="sync"
-              title="Demo health data"
-              subtitle={'Testing only. Fake steps, sleep and workouts for "Sync health".'}
-              value={demo}
-              onChange={async (v) => {
-                setDemo(v);
-                await setDemoHealthEnabled(v);
-              }}
-            />
-          </>
+          <SwitchRow
+            icon="sync"
+            title="Demo health data"
+            subtitle={'Testing only. Fake steps, sleep and workouts for "Sync health".'}
+            value={demo}
+            onChange={async (v) => {
+              setDemo(v);
+              await setDemoHealthEnabled(v);
+            }}
+          />
         ) : null}
-      </Card>
-
-      <Section title="Appearance" />
-      <Segmented
-        options={[
-          { value: 'system', label: 'System' },
-          { value: 'light', label: 'Light' },
-          { value: 'dark', label: 'Dark' },
-        ]}
-        value={themePreference}
-        onChange={setThemePreference}
-      />
-      <Text variant="caption">System matches your iPhone’s light or dark setting.</Text>
+      </Group>
 
       <Section title="Account" />
-      <Card>
-        <ListRow left={<IconBubble name="user" size={36} />} title="Signed in as" subtitle={session?.user.email ?? ''} />
-      </Card>
-
-      <Section title="Password" />
       <ChangePassword email={session?.user.email ?? ''} />
 
       <ErrorNote message={actionError} />
       <Button title="Sign out" kind="secondary" icon="logout" onPress={() => supabase.auth.signOut()} />
 
       {/* Keep this last on the page. */}
-      <Section title="Delete account" />
       <DeleteAccount userId={userId} />
     </Screen>
-  );
-}
-
-function DbUpdateNote() {
-  const { c } = useTheme();
-  return (
-    <Card style={{ gap: 6, backgroundColor: c.warmSoft, borderColor: c.warmSoft }}>
-      <Text variant="heading" color={c.warmInk}>
-        Database update needed
-      </Text>
-      <Text variant="small" color={c.warmInk}>
-        Photos and privacy settings need the newest database scripts. On your computer, run npm run db:push in the
-        project folder, then pull down here to refresh.
-      </Text>
-    </Card>
   );
 }

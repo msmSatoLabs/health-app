@@ -42,6 +42,11 @@ const glyphs = {
   trendFlat: 'trending-neutral',
   camera: 'camera-outline',
   live: 'access-point',
+  alert: 'alert-circle-outline',
+  check: 'check-circle-outline',
+  palette: 'palette-outline',
+  shield: 'shield-check-outline',
+  key: 'key-outline',
 } satisfies Record<string, GlyphName>;
 
 export type IconName = keyof typeof glyphs;
