@@ -4,6 +4,8 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, Share, View } from 'react-native';
 import { Icon } from '../../components/Icon';
+import { LeaderRow, Podium } from '../../components/Leaderboard';
+import { gapToNext, splitPodium } from '../../features/leaderboard/logic';
 import { Avatar, Button, Card, Chip, Divider, ErrorNote, ListRow, Loading, Row, Screen, Section, Segmented, Text } from '../../components/ui';
 import {
   friendlyError,
@@ -22,7 +24,7 @@ import { useLoad } from '../../lib/useLoad';
 import { useTheme } from '../../theme/theme';
 
 export default function CommunityScreen() {
-  const { c, radius } = useTheme();
+  const { c } = useTheme();
   const userId = useUserId();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [period, setPeriod] = useState<LeaderboardPeriod>('week');
@@ -68,6 +70,10 @@ export default function CommunityScreen() {
   const pastSeasons = seasonsSince(localDay(new Date(community.created_at)), today).filter((s) => s !== current);
   const isPastSeason = period !== 'today' && period !== 'week' && period !== current;
   const segment = isPastSeason ? current : period;
+  const { podium, rest } = splitPodium(board);
+  const myPodiumRow = podium.find((r) => r.user_id === userId);
+  const gap = gapToNext(board, userId);
+  const gapSubtitle = gap ? `${gap.points.toLocaleString()} pts to #${gap.rank}` : board.length > 1 ? 'In first place' : undefined;
 
   async function copyCode() {
     await Clipboard.setStringAsync(community.invite_code);
@@ -138,39 +144,35 @@ export default function CommunityScreen() {
         </Text>
       ) : null}
 
+      {board.length === 0 ? (
+        <Card>
+          <Text variant="body" color={c.muted}>
+            No points yet for this period.
+          </Text>
+        </Card>
+      ) : null}
+      {podium.length > 0 ? (
+        <Podium people={podium} userId={userId} onPress={(p) => router.push(`/member/${p.user_id}`)} />
+      ) : null}
       <View style={{ gap: 8 }}>
-        {board.map((r) => {
+        {myPodiumRow ? (
+          <LeaderRow
+            person={myPodiumRow}
+            me
+            subtitle={gapSubtitle}
+            onPress={() => router.push(`/member/${myPodiumRow.user_id}`)}
+          />
+        ) : null}
+        {rest.map((r) => {
           const me = r.user_id === userId;
           return (
-            <Pressable
+            <LeaderRow
               key={r.user_id}
+              person={r}
+              me={me}
+              subtitle={me ? gapSubtitle : undefined}
               onPress={() => router.push(`/member/${r.user_id}`)}
-              accessibilityRole="button"
-              accessibilityLabel={`Rank ${r.rank}, ${me ? 'you' : r.display_name}, ${r.points} points`}
-              style={({ pressed }) => ({
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                borderRadius: radius.row,
-                backgroundColor: me ? c.accent : c.surface,
-                borderWidth: 1,
-                borderColor: me ? c.accent : c.cardBorder,
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <Text variant="heading" color={me ? c.onAccent : r.rank === 1 ? c.gold : c.muted} style={{ width: 28 }}>
-                {r.rank}
-              </Text>
-              <Avatar name={r.display_name} url={r.avatar_url} size={40} />
-              <Text variant="heading" color={me ? c.onAccent : c.ink} style={{ flex: 1 }} numberOfLines={1}>
-                {me ? 'You' : r.display_name}
-              </Text>
-              <Text variant="heading" color={me ? c.onAccent : c.ink}>
-                {r.points.toLocaleString()}
-              </Text>
-            </Pressable>
+            />
           );
         })}
       </View>
